@@ -1,8 +1,8 @@
-# Proposal A review: staking probe upload only
+﻿# Proposal A review: staking probe upload only
 
-## Decision: NOT READY FOR SUBMISSION — OWNER RISK ACCEPTED; OPERATOR READINESS INCOMPLETE
+## Decision: NOT READY FOR SUBMISSION — v3.2.10 verified; gas and fee unresolved
 
-The exact source commit is public, the dependency-risk acceptance is recorded by the project owner for this probe only, and the proposal JSON and payload integrity checks pass. This is **not ready for submission**: `qorechaind` v3.2.9 and its PQC commands are not available on `PATH` (availability outside `PATH` is unverified), and transaction-level gas estimation has not been run. Fresh endpoint reads confirm the upload circuit is disabled and direct upload permissions remain `Nobody`; governance therefore needs to execute the three-message circuit reset, store, and restore proposal atomically. No signing, cosigning, broadcast, upload, instantiation, or Diana G0-A test occurred.
+The exact source commit is public, the dependency-risk acceptance is recorded by the project owner for this probe only, and the proposal JSON and payload integrity checks pass. This is **not ready for submission**: Proposal 39 does not provide a trusted v3.2.9 bundle URL; the live official manifest and applied upgrade are now v3.2.10; `qorechaind`/PQC CLI is not available on `PATH`; no local signing keys were verified; and no gas dry run was run. Direct upload remains disallowed and the circuit breaker remains active, so governance must execute the atomic reset/store/restore message sequence. No signing, cosigning, broadcast, upload, instantiation, or Diana G0-A test occurred.
 
 ## Source and build provenance
 
@@ -18,7 +18,7 @@ Optimized Wasm size is 169,218 bytes; its SHA-256 is `4b0125a5b04a93295ebf6f8f15
 
 ## Live Diana data used in JSON
 
-The original snapshot was superseded by the fresh read-only preflight at height `10673181`, time `2026-11-24T14:50:59.553178651Z`. Full evidence: `docs/evidence/proposal-a-final-live-preflight.json`; query responses were at heights `10673178`–`10673180`.
+The previous snapshot was superseded by the read-only preflight at height `10673893`, time `2026-11-24T15:08:00.897621278Z`. Full evidence: `docs/evidence/proposal-a-operator-preflight.json`; parameter responses were at heights `10673890`â€“`10673892`. The owner account balance was not queried because no public account address was supplied; no wallet storage was accessed.
 
 - Governance module account: `qor10d07y265gmmuvt4z0w9aw880jnsr700jwfyxr3`.
 - Upload permission `Nobody`; default instantiate permission `Everybody`.
@@ -28,12 +28,14 @@ The original snapshot was superseded by the fresh read-only preflight at height 
 - Cross-VM is enabled. Max message size is `65536`; max Cosmos tx gas `50000000`; max block Wasm gas `3000000`; current targets and pins are in the snapshot.
 - Consensus block max gas is `500000000`.
 - EVM fee-market base fee and minimum gas price are both `0.1uqor`/gas. Generic transaction-parameter endpoints returned HTTP 501, so exact gas and fees must be estimated using the official CLI and live state must be refreshed immediately before any later submission.
+- Consensus block maximum gas is `500000000`; cross-VM maximum Cosmos tx gas is `50000000`.
+- The official live release manifest identifies v3.2.10 with `minCompatible=3.2.10`, upgrade height `10654800`; applied-plan queries show v3.2.9 at `10424000` and v3.2.10 at `10654800`. These live values supersede the stale documentation statement that Diana still runs v3.2.9.
 
 The JSON has exactly three messages in order: reset breaker, store code from the governance account, trip breaker. It has no instantiate message or code ID. The breaker exception is scoped to atomic proposal execution. Later instantiation must use the ID returned by successful storage.
 
 ## Final operator preparation
 
-The owner accepted the residual dependency risks on 24 November 2026 for this exact testnet probe only; see `docs/SECURITY_RISK_ACCEPTANCE.md`. No acceptance transfers to production. The detailed unsigned generation, gas-estimation, dry-run, manual broadcast, and post-submission verification procedure is in `artifacts/proposals/OPERATOR_CHECKLIST.md`. `qorechaind` and the PQC CLI are not installed here, so no unsigned transaction has been generated and no gas estimate has been verified. The current proposal JSON and base64 payload were not changed.
+The owner accepted the residual dependency risks on 24 November 2026 for this exact testnet probe only; see `docs/SECURITY_RISK_ACCEPTANCE.md`. No acceptance transfers to production. Release evidence is in `docs/evidence/qorechain-release-provenance.json`: Proposal 39 supplies v3.2.9 binary and archive SHA-256 values and the archive filename, but no URL. The live manifest is already v3.2.10, so no bundle was downloaded or installed. The account/key limitations and operator procedure are in `artifacts/proposals/OPERATOR_CHECKLIST.md`. `qorechaind`/PQC CLI is absent from `PATH`; its help, shared libraries, and dry-run behavior were not inspected locally. No unsigned transaction was generated and no gas estimate was verified. The current proposal JSON and base64 payload were not changed.
 
 ## Dependency security findings
 
@@ -47,11 +49,11 @@ The first two resolve through `cosmwasm-crypto`, which CosmWasm 1.5.11 gates to 
 
 ## WASM-target dependency disposition (24 November 2026)
 
-The committed probe manifest uses `cosmwasm-std 1.5.11`. QoreChain's official Native Development guide lists `cosmwasm-std 1.5+`; Diana's v3.2.9 release is documented as active since 20 November 2026. This is documented API compatibility, not proof of live artifact acceptance or G0-A behavior. The exact internal wasmvm version for v3.2.9 is not stated in the public release documentation reviewed.
+The committed probe manifest uses `cosmwasm-std 1.5.11`. QoreChain's official Native Development guide lists `cosmwasm-std 1.5+`. The latest official manifest and applied-upgrade query show Diana at v3.2.10, not v3.2.9; this API compatibility is not proof of live artifact acceptance or G0-A behavior. The exact internal wasmvm version for v3.2.10 is not stated in the release data captured here.
 
 The current contract processes a provider address and public staking delegation results. It does not accept private keys or private cryptographic scalars, sign or verify signatures, accept arbitrary binary message data, make direct network calls, or load/execute untrusted dynamic code. The RustSec advisories describe timing leakage while operating on secret integer/scalar values. Source and entrypoint reachability analysis show those operations are not part of this probe's contract behavior. Host-native dependency risk persists for native builds/tests or other native users of the CosmWasm crypto APIs.
 
-**Disposition:** the two vulnerable crate implementations are not in the deployed wasm32 graph, and the four corresponding CosmWasm wrappers are unreachable from exported entrypoints under the conservative call-table analysis. The owner accepted the bounded residual risk on 24 November 2026 for this probe only. Proposal A remains **NOT READY FOR SUBMISSION** until official CLI availability, transaction gas estimation, and separate submission approval. G0-A remains untested and not passed.
+**Disposition:** the two vulnerable crate implementations are not in the deployed wasm32 graph, and the four corresponding CosmWasm wrappers are unreachable from exported entrypoints under the conservative call-table analysis. The owner accepted the bounded residual risk on 24 November 2026 for this probe only. Proposal A remains **NOT READY FOR SUBMISSION** until an authoritative v3.2.9 archive URL is established (or the owner explicitly changes the requested version), required local signing access is reviewed, the official CLI is verified, transaction gas is dry-run, and separate submission approval is given. G0-A remains untested and not passed.
 
 ## Later instantiation procedure (not performed)
 
@@ -66,5 +68,26 @@ After a separately approved upload succeeds, query actual code info and returned
 - Code uploaded / instantiated: **no / no**.
 - G0-A tested on Diana / passed: **no / no**.
 - Owner risk acceptance: **ACCEPTED for this Diana testnet probe only (24 November 2026)**.
-- Governance submission readiness: **NOT READY; CLI/PQC tooling and transaction gas estimation remain outstanding**.
+- Governance submission readiness: **NOT READY; requested archive URL, CLI/PQC tooling, local signing access, owner balance, and transaction gas estimate are outstanding**.
 - Product implementation: **NO-GO**.
+
+## Superseding Diana v3.2.10 CLI and Proposal A readiness record â€” 24 November 2026
+
+This record supersedes earlier v3.2.9/no-install and height 10673893 statements. The later verified snapshot and CLI results below are authoritative.
+
+**Status: NOT READY FOR SUBMISSION.** The current official manifest at `https://download.qore.host/testnet/latest.json` reports version and minCompatible `3.2.10`, upgradeHeight `10654800`, and binary URL `https://download.qore.host/testnet/qorechaind-v3.2.10-final-r2-linux-amd64.tar.gz`. Manifest SHA-256 is `05bf891db98538dce1d9a710f93e5102c0e9ace79f57b4cbf10ae688c63fecb4` and size is `111890694` bytes. The live applied plan is v3.2.10 at height 10654800; latest Diana status is height `10677513`, timestamp `2026-11-24T16:34:02.221783810Z`. The sources agree. Evidence: `docs/evidence/qorechain-v3.2.10-manifest-preflight.json` and `docs/evidence/proposal-a-v3.2.10-final-preflight.json`.
+
+The exact manifest URL was downloaded in Ubuntu WSL2 at `2026-11-24T15:35:54Z` (completed `15:36:16Z`) to `~/.local/qorechain/v3.2.10/qorechaind-v3.2.10-final-r2-linux-amd64.tar.gz`. The preserved archive matched both manifest size and SHA-256 before extraction. Its complete contents, including `lib/`, are installed under `~/.local/qorechain/v3.2.10/`. `env.sh` prepends the install's `bin` and `lib` locations while preserving existing PATH and LD_LIBRARY_PATH values; no shell startup file or system library configuration was changed. See the download, archive-list, and install metadata evidence under `docs/evidence/`.
+
+The installed ELF is x86-64, SHA-256 `ffc76719d5f31bd59e42176c2d92c2e43e2386b4bcd5686964a847814ae81d3f`. `ldd` found no missing libraries; `LD_DEBUG=libs` confirms bundled `libqorepqc.so`, `libqoresvm.so`, and `libwasmvmqore_v1.x86_64.so` loaded for version/help invocation. The bundle's `libwasmvm.x86_64.so` is preserved but was not exercised by those commands. `qorechaind version` and `version --long` exited successfully but printed no version text; v3.2.10 provenance is established by the verified official manifest bundle, not that CLI output. Full command output: `docs/evidence/qorechain-v3.2.10-cli-verification.log`.
+
+Installed help confirms PQC commands are integrated into `qorechaind`; no standalone `qorechain-pqc` binary is required. `tx pqc cosign` help documents `--dry-run` as a non-broadcast gas simulation and notes local Keybase is inaccessible in that mode. `gov submit-proposal --generate-only` successfully generated unsigned JSON from existing Proposal A without signing; signer/signature arrays are empty and it has no fees. The supplied public account `qor1f0zn99as5ymf0m4curxrx4csz096vnrupdtadq` has balance `99865000uqor`; live PQC registration reports `found=true`, `key_type=hybrid`, `possession_proven=true`. No wallet extension storage or private key was accessed.
+
+An actual gas simulation did **not** occur. The first cosign dry-run failed because `--pqc-key` is required. A second attempt with a nonexistent placeholder key and in-memory keyring stopped because the CLI requires a local `.dilithium` key file. No key was created, recovered, read, or used, and no simulation reached the node. Logs and commands: `docs/evidence/proposal-a-gas-dry-run-v3.2.10.log` and `docs/evidence/dry-run-proposal-a-gas-v3.2.10.sh`. No genuine gas measurement exists and no fee has been calculated; the provisional 20-million estimate is invalid for use. The official measured-gas-plus-30% procedure cannot be applied until a separately reviewed safe signing-key procedure is available.
+
+Latest live snapshot (height `10677513`, time `2026-11-24T16:34:02.221783810Z`): governance account `qor10d07y265gmmuvt4z0w9aw880jnsr700jwfyxr3`; upload permission `Nobody`; instantiate default `Everybody`; `MsgStoreCode` disabled; latest code ID 865; normal deposit `10000000uqor`; voting period `14400s`; quorum `.334`, threshold `.5`, veto `.334`; minimum gas price/base fee `.1uqor`; max block gas 500000000; cross-VM max Cosmos tx gas 50000000. Generic tx params endpoint returned HTTP 501. These are a dated snapshot and must be refreshed before any future submission.
+
+The package remains **NOT READY FOR SUBMISSION** because a real no-broadcast gas result and reviewed fee are unavailable without local PQC signing material, which was not accessed. No transaction was signed, cosigned, broadcast or submitted; no code was uploaded or instantiated. G0-A remains untested and not passed.
+
+
+Unsigned transaction preparation evidence: `docs/evidence/generate-proposal-a-unsigned-v3.2.10.sh` records the exact `qorechaind tx gov submit-proposal artifacts/proposals/proposal-a-store-probe.json --from qor1f0zn99as5ymf0m4curxrx4csz096vnrupdtadq --chain-id qorechain-diana --node https://rpc-testnet.qore.host:443 --generate-only --output json` invocation. Its valid unsigned output is `docs/evidence/proposal-a-unsigned-tx-v3.2.10.json`; generation log is adjacent. It is unsigned preparation only, has no final gas/fee, and is not a broadcast-ready transaction. The attempted dry-run command and its two key-related failures are preserved in `docs/evidence/dry-run-proposal-a-gas-v3.2.10.sh` and `docs/evidence/proposal-a-gas-dry-run-v3.2.10.log`.

@@ -1,0 +1,5 @@
+Install directory: /home/hari_code/.local/qorechain/v3.2.10
+Archive SHA-256: 05bf891db98538dce1d9a710f93e5102c0e9ace79f57b4cbf10ae688c63fecb4
+Archive bytes: 111890694
+Extraction UTC: 2026-11-24T16:10:25Z
+Environment setup: source /home/hari_code/.local/qorechain/v3.2.10/env.sh

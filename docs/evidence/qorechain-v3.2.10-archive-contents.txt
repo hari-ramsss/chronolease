@@ -1,0 +1,6 @@
+qorechaind
+lib/
+lib/libqorepqc.so
+lib/libqoresvm.so
+lib/libwasmvmqore_v1.x86_64.so
+lib/libwasmvm.x86_64.so

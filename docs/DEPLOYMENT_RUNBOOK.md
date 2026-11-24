@@ -27,6 +27,58 @@ No deployment or proposal is authorized by this document.
 Never put wallet secrets in files, commands, logs, or chat. Never submit a
 proposal or broadcast a transaction without the operator's explicit approval.
 
+## Diana CLI and Proposal A readiness investigation — 24 November 2026
+
+**Status: NOT READY FOR SUBMISSION.** Ubuntu WSL2 reports `x86_64`; read-only
+`command -v qorechaind` and `command -v qorechain-pqc` checks returned no paths.
+No qorechaind binary was installed; no version/help output, PQC command help,
+or shared-library load check exists. No archive was downloaded or extracted,
+no wallet storage was accessed, and no key was created, recovered, or used. No
+transaction was generated and no gas dry run was performed.
+
+The official Diana [connecting guide](https://docs.qorechain.io/getting-started/connecting-to-testnet/)
+still describes v3.2.9, but the live official manifest fetched at this review
+reports version/minCompatible `3.2.10`, upgrade height `10654800`, and points to
+the v3.2.10 archive. The live applied-plan endpoints report v3.2.9 at
+`10424000` and v3.2.10 at `10654800`; current Diana snapshot is height
+`10673893`, time `2026-11-24T15:08:00.897621278Z`. This supersedes the prior
+snapshot and establishes that the chain has advanced beyond the requested
+v3.2.9 release. We did not substitute v3.2.10.
+
+Live proposal 39 establishes the v3.2.9 artifact identifiers:
+
+- Binary: `qorechaind v3.2.9 (final-r26)`, SHA-256
+  `29a74776c93d8390266dbb9be56dda55bb44c42aa6ff75654af1a0a00056a4c9`.
+- Archive: `qore-artifact-v3.2.9-final-r26-linux-amd64.tgz`, SHA-256
+  `58bf0894010e3bab77a373b723aa7bf50cf93bfa9f5ce49ade4bdb06dbafc1a2`.
+- Proposal 39 says to copy the whole `lib/` folder, but does not provide an
+  archive URL, size, or list of shared libraries. Per the run instructions, no
+  URL was guessed and no download was attempted.
+
+Full release evidence: `docs/evidence/qorechain-release-provenance.json`.
+Current public-chain parameter responses: `docs/evidence/proposal-a-operator-preflight.json`.
+The snapshot at height `10673893` (`2026-11-24T15:08:00.897621278Z`) reports
+governance address `qor10d07y265gmmuvt4z0w9aw880jnsr700jwfyxr3`, upload
+permission `Nobody`, instantiate permission `Everybody`, `MsgStoreCode` still
+disabled, latest code ID `865`, regular deposit `10000000uqor`, voting period
+`14400s`, base/minimum gas price `0.1uqor`, consensus max block gas
+`500000000`, and cross-VM max Cosmos tx gas `50000000`. The owner QOR balance
+could not be retrieved without the public account address.
+The operator checklist records the coin-60/PQC account compatibility assessment
+and why the CLI dry run is blocked. QoreX's documented native
+`signAndBroadcast` broadcasts, so it is not a no-send substitute for this
+estimate. The QoreX account address was not provided, so the owner balance and
+registered-key record were not queried.
+
+To resume v3.2.9 installation, obtain the exact official archive URL from
+QoreChain and verify the archive hash against Proposal 39 before extracting it
+under the proposed user-local WSL path with the complete bundled `lib/`
+directory. Separately review an owner-only, non-exporting local signing setup
+for the already registered coin-60 account. Do not use `recover-key` without a
+separate reviewed procedure: the documented command consumes the mnemonic and
+writes an unencrypted private key file. Do not run normal `tx pqc cosign`; the
+official proposal guide says that mode broadcasts.
+
 ## WSL2 optimizer build record
 
 Completed 24 November 2026 in Ubuntu 24.04.3 LTS on WSL2, architecture
@@ -88,3 +140,23 @@ and `artifacts/proposals/DEPENDENCY_AUDIT.md` before any separate operator
 review. Current milestones: optimized build verified; Proposal A locally prepared;
 proposal not submitted or passed; contract not instantiated; G0-A not tested on
 Diana and not passed. Probe source commit `724729bcfc34bb43131165bbbe49f90dace5926e` is public at the configured chronolease origin. Dependency audit findings keep the proposal NOT READY. No chain action is authorized by this record.
+
+## Superseding Diana v3.2.10 CLI and Proposal A readiness record — 24 November 2026
+
+This record supersedes earlier v3.2.9/no-install and height 10673893 statements. The later verified snapshot and CLI results below are authoritative.
+
+**Status: NOT READY FOR SUBMISSION.** The current official manifest at `https://download.qore.host/testnet/latest.json` reports version and minCompatible `3.2.10`, upgradeHeight `10654800`, and binary URL `https://download.qore.host/testnet/qorechaind-v3.2.10-final-r2-linux-amd64.tar.gz`. Manifest SHA-256 is `05bf891db98538dce1d9a710f93e5102c0e9ace79f57b4cbf10ae688c63fecb4` and size is `111890694` bytes. The live applied plan is v3.2.10 at height 10654800; latest Diana status is height `10677513`, timestamp `2026-11-24T16:34:02.221783810Z`. The sources agree. Evidence: `docs/evidence/qorechain-v3.2.10-manifest-preflight.json` and `docs/evidence/proposal-a-v3.2.10-final-preflight.json`.
+
+The exact manifest URL was downloaded in Ubuntu WSL2 at `2026-11-24T15:35:54Z` (completed `15:36:16Z`) to `~/.local/qorechain/v3.2.10/qorechaind-v3.2.10-final-r2-linux-amd64.tar.gz`. The preserved archive matched both manifest size and SHA-256 before extraction. Its complete contents, including `lib/`, are installed under `~/.local/qorechain/v3.2.10/`. `env.sh` prepends the install's `bin` and `lib` locations while preserving existing PATH and LD_LIBRARY_PATH values; no shell startup file or system library configuration was changed. See the download, archive-list, and install metadata evidence under `docs/evidence/`.
+
+The installed ELF is x86-64, SHA-256 `ffc76719d5f31bd59e42176c2d92c2e43e2386b4bcd5686964a847814ae81d3f`. `ldd` found no missing libraries; `LD_DEBUG=libs` confirms bundled `libqorepqc.so`, `libqoresvm.so`, and `libwasmvmqore_v1.x86_64.so` loaded for version/help invocation. The bundle's `libwasmvm.x86_64.so` is preserved but was not exercised by those commands. `qorechaind version` and `version --long` exited successfully but printed no version text; v3.2.10 provenance is established by the verified official manifest bundle, not that CLI output. Full command output: `docs/evidence/qorechain-v3.2.10-cli-verification.log`.
+
+Installed help confirms PQC commands are integrated into `qorechaind`; no standalone `qorechain-pqc` binary is required. `tx pqc cosign` help documents `--dry-run` as a non-broadcast gas simulation and notes local Keybase is inaccessible in that mode. `gov submit-proposal --generate-only` successfully generated unsigned JSON from existing Proposal A without signing; signer/signature arrays are empty and it has no fees. The supplied public account `qor1f0zn99as5ymf0m4curxrx4csz096vnrupdtadq` has balance `99865000uqor`; live PQC registration reports `found=true`, `key_type=hybrid`, `possession_proven=true`. No wallet extension storage or private key was accessed.
+
+An actual gas simulation did **not** occur. The first cosign dry-run failed because `--pqc-key` is required. A second attempt with a nonexistent placeholder key and in-memory keyring stopped because the CLI requires a local `.dilithium` key file. No key was created, recovered, read, or used, and no simulation reached the node. Logs and commands: `docs/evidence/proposal-a-gas-dry-run-v3.2.10.log` and `docs/evidence/dry-run-proposal-a-gas-v3.2.10.sh`. No genuine gas measurement exists and no fee has been calculated; the provisional 20-million estimate is invalid for use. The official measured-gas-plus-30% procedure cannot be applied until a separately reviewed safe signing-key procedure is available.
+
+Latest live snapshot (height `10677513`, time `2026-11-24T16:34:02.221783810Z`): governance account `qor10d07y265gmmuvt4z0w9aw880jnsr700jwfyxr3`; upload permission `Nobody`; instantiate default `Everybody`; `MsgStoreCode` disabled; latest code ID 865; normal deposit `10000000uqor`; voting period `14400s`; quorum `.334`, threshold `.5`, veto `.334`; minimum gas price/base fee `.1uqor`; max block gas 500000000; cross-VM max Cosmos tx gas 50000000. Generic tx params endpoint returned HTTP 501. These are a dated snapshot and must be refreshed before any future submission.
+
+The package remains **NOT READY FOR SUBMISSION** because a real no-broadcast gas result and reviewed fee are unavailable without local PQC signing material, which was not accessed. No transaction was signed, cosigned, broadcast or submitted; no code was uploaded or instantiated. G0-A remains untested and not passed.
+
+Unsigned transaction preparation evidence: `docs/evidence/generate-proposal-a-unsigned-v3.2.10.sh` records the exact `qorechaind tx gov submit-proposal artifacts/proposals/proposal-a-store-probe.json --from qor1f0zn99as5ymf0m4curxrx4csz096vnrupdtadq --chain-id qorechain-diana --node https://rpc-testnet.qore.host:443 --generate-only --output json` invocation. Its valid unsigned output is `docs/evidence/proposal-a-unsigned-tx-v3.2.10.json`; generation log is adjacent. It is unsigned preparation only, has no final gas/fee, and is not a broadcast-ready transaction. The attempted dry-run command and its two key-related failures are preserved in `docs/evidence/dry-run-proposal-a-gas-v3.2.10.sh` and `docs/evidence/proposal-a-gas-dry-run-v3.2.10.log`.

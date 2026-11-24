@@ -1,0 +1,337 @@
+=== WSL architecture ===
+x86_64
+=== Executable file and digest ===
+./qorechaind: ELF 64-bit LSB pie executable, x86-64, version 1 (SYSV), dynamically linked, interpreter /lib64/ld-linux-x86-64.so.2, BuildID[sha1]=eaa0f4e2c011180f101c0a2cdb8f8b58ab299053, for GNU/Linux 3.2.0, with debug_info, not stripped
+ffc76719d5f31bd59e42176c2d92c2e43e2386b4bcd5686964a847814ae81d3f  ./qorechaind
+  Class:                             ELF64
+  Machine:                           Advanced Micro Devices X86-64
+=== Dynamic shared-library resolution ===
+	linux-vdso.so.1 (0x00007ffc43bc6000)
+	libresolv.so.2 => /lib/x86_64-linux-gnu/libresolv.so.2 (0x000078490870b000)
+	libqorepqc.so => /home/hari_code/.local/qorechain/v3.2.10/lib/libqorepqc.so (0x00007848fb763000)
+	libqoresvm.so => /home/hari_code/.local/qorechain/v3.2.10/lib/libqoresvm.so (0x00007848fb200000)
+	libwasmvmqore_v1.x86_64.so => /home/hari_code/.local/qorechain/v3.2.10/lib/libwasmvmqore_v1.x86_64.so (0x00007848fa200000)
+	libc.so.6 => /lib/x86_64-linux-gnu/libc.so.6 (0x00007848f9e00000)
+	/lib64/ld-linux-x86-64.so.2 (0x0000784908726000)
+	libgcc_s.so.1 => /lib/x86_64-linux-gnu/libgcc_s.so.1 (0x00007849086db000)
+	libpthread.so.0 => /lib/x86_64-linux-gnu/libpthread.so.0 (0x00007849086d6000)
+	libm.so.6 => /lib/x86_64-linux-gnu/libm.so.6 (0x00007848fb67a000)
+	libdl.so.2 => /lib/x86_64-linux-gnu/libdl.so.2 (0x00007849086d1000)
+=== qorechaind version ===
+=== qorechaind version --long ===
+=== qorechaind --help ===
+QoreChain — Quantum-Safe AI-Native Blockchain
+
+Usage:
+  qorechaind [command]
+
+Available Commands:
+  comet        CometBFT subcommands
+  completion   Generate the autocompletion script for the specified shell
+  debug        Tool for helping with debugging your application
+  export       Export state to JSON
+  genesis      Application's genesis-related subcommands
+  help         Help about any command
+  index-eth-tx Index historical eth txs
+  init         Initialize private validator, p2p, genesis, and application configuration files
+  keys         Manage your application's keys
+  prune        Prune app history states by keeping the recent heights and deleting old heights
+  query        Querying subcommands
+  rollback     rollback Cosmos SDK and CometBFT state by one height
+  sidecar      Manage sidecar processes for external chain bridges and validators
+  snapshots    Manage local snapshots
+  start        Run the full node
+  status       Query remote node for status
+  tx           Transactions subcommands
+
+Flags:
+  -h, --help                help for qorechaind
+      --home string         directory for config and data (default "/home/hari_code/.qorechaind")
+      --log_format string   The logging format (json|plain) (default "plain")
+      --log_level string    The logging level (trace|debug|info|warn|error|fatal|panic|disabled or '*:<level>,<key>:<level>') (default "info")
+      --log_no_color        Disable colored logs
+      --trace               print out full stack trace on errors
+
+Use "qorechaind [command] --help" for more information about a command.
+=== qorechaind tx pqc --help ===
+PQC module transaction commands
+
+Usage:
+  qorechaind tx pqc [flags]
+  qorechaind tx pqc [command]
+
+Available Commands:
+  authorize-evm-delegation Consent, with your post-quantum key, to one EIP-7702 delegation of your account
+  clear-evm-delegation     Remove your account's EIP-7702 delegation, with your post-quantum key
+  close-evm-window         Revoke your EVM-lane authorisation window immediately
+  close-svm-window         Revoke your SVM-lane authorisation window immediately
+  cosign                   PQC+classical sign a generate-only tx and broadcast it (or print it, or estimate its gas)
+  gen-kem-key              Generate and store an ML-KEM-1024 key pair for receiving encrypted data
+  gen-key                  Generate and store a Dilithium-5 key for client-side hybrid signing
+  migrate-key              Migrate your PQC key to a new algorithm (dual-signature required)
+  multisig-assemble        Assemble the classical member signatures and broadcast (or print) the multisig transaction
+  multisig-classical-sign  Sign a combined multisig transaction as one classical member (SIGN_MODE_DIRECT)
+  multisig-combine         Combine post-quantum member signatures into the transaction's multisig extension
+  multisig-member-proof    Prove, as a post-quantum member, that you hold your key and consent to the multisig (offline)
+  multisig-register        Register (or re-register) the post-quantum member set of a multisig account
+  multisig-sign            Sign a multisig transaction as one post-quantum member (offline with --offline)
+  open-evm-window          Authorise your EVM lane for a bounded number of blocks, transactions and value
+  open-svm-window          Authorise a Solana wallet key for your account, bounded in blocks, transactions and value
+  recover-key              Recover a Dilithium-5 key deterministically from a mnemonic (read from stdin)
+  register-kem-key         Publish your ML-KEM encryption public key so others can encrypt to your account
+  register-key             Register a PQC key for your account (legacy, defaults to Dilithium-5)
+  register-key-v2          Register a PQC key with explicit algorithm selection (v0.6.0)
+  remove-kem-key           Withdraw your published ML-KEM encryption public key
+  rotate-key               Rotate your ML-DSA-87 key to a new key of the same algorithm (mnemonic on stdin)
+
+Flags:
+  -h, --help   help for pqc
+
+Global Flags:
+      --home string         directory for config and data (default "/home/hari_code/.qorechaind")
+      --log_format string   The logging format (json|plain) (default "plain")
+      --log_level string    The logging level (trace|debug|info|warn|error|fatal|panic|disabled or '*:<level>,<key>:<level>') (default "info")
+      --log_no_color        Disable colored logs
+      --trace               print out full stack trace on errors
+
+Use "qorechaind tx pqc [command] --help" for more information about a command.
+=== qorechaind tx pqc cosign --help ===
+Attach a Dilithium-5 hybrid signature (and the account's classical
+secp256k1 signature) to a transaction and broadcast it. Produce the input with
+any tx command using --generate-only, e.g.:
+
+  qorechaind tx bank send <from> <to> 1000uqor --generate-only > tx.json
+  qorechaind tx pqc cosign tx.json --from <from> --pqc-key <name> --chain-id <id>
+
+The --pqc-key name refers to a key created with `tx pqc gen-key`.
+
+The standard tx flags are honoured: --generate-only prints the signed tx as
+JSON instead of broadcasting it (submit it later with `tx broadcast`);
+--offline does the same without contacting a node and needs --account-number,
+--sequence and --sign-bytes v1|v2; --dry-run simulates it and prints the gas
+estimate.
+
+The classical signature is DIRECT by default. --sign-mode textual signs the
+SIGN_MODE_TEXTUAL screens instead, which is what a Ledger signs (a Ledger
+key gets textual without the flag). amino-json and direct-aux are refused:
+neither can cover the PQC extension.
+
+Usage:
+  qorechaind tx pqc cosign [unsigned-tx.json] [flags]
+
+Flags:
+  -a, --account-number uint         The account number of the signing account (offline mode only)
+      --aux                         Generate aux signer data instead of sending a tx
+  -b, --broadcast-mode string       Transaction broadcasting mode (sync|async) (default "sync")
+      --chain-id string             The network chain ID
+      --dry-run                     ignore the --gas flag and perform a simulation of a transaction, but don't broadcast it (when enabled, the local Keybase is not accessible)
+      --fee-granter string          Fee granter grants fees for the transaction
+      --fee-payer string            Fee payer pays fees for the transaction instead of deducting from the signer
+      --fees string                 Fees to pay along with transaction; eg: 10uatom
+      --from string                 Name or address of private key with which to sign
+      --gas string                  gas limit to set per-transaction; set to "auto" to calculate sufficient gas automatically. Note: "auto" option doesn't always report accurate results. Set a valid coin value to adjust the result. Can be used instead of "fees". (default 200000)
+      --gas-adjustment float        adjustment factor to be multiplied against the estimate returned by the tx simulation; if the gas limit is set manually this flag is ignored  (default 1)
+      --gas-prices string           Gas prices in decimal format to determine the transaction fee (e.g. 0.1uatom)
+      --generate-only               Build an unsigned transaction and write it to STDOUT (when enabled, the local Keybase only accessed when providing a key name)
+  -h, --help                        help for cosign
+      --keyring-backend string      Select keyring's backend (os|file|kwallet|pass|test|memory) (default "os")
+      --keyring-dir string          The client Keyring directory; if omitted, the default 'home' directory will be used
+      --ledger                      Use a connected Ledger device
+      --node string                 <host>:<port> to CometBFT rpc interface for this chain (default "tcp://localhost:26657")
+      --note string                 Note to add a description to the transaction (previously --memo)
+      --offline                     Offline mode (does not allow any online functionality)
+  -o, --output string               Output format (text|json) (default "json")
+      --pqc-key tx pqc gen-key      name of the Dilithium key (created with tx pqc gen-key)
+  -s, --sequence uint               The sequence number of the signing account (offline mode only)
+      --sign-bytes string           hybrid sign-bytes form: auto (ask the chain whether pqc-sign-bytes-v2 is enabled; on a node without that query, whether the v3.2.0 upgrade has been applied, or the name it shipped under earlier), v1 or v2 (default "auto")
+      --sign-mode string            Choose sign mode (direct|amino-json|direct-aux|textual), this is an advanced feature
+      --timeout-duration duration   TimeoutDuration is the duration the transaction will be considered valid in the mempool. The transaction's unordered nonce will be set to the time of transaction creation + the duration value passed. If the transaction is still in the mempool, and the block time has passed the time of submission + TimeoutTimestamp, the transaction will be rejected.
+      --timeout-height uint         DEPRECATED: Please use --timeout-duration instead. Set a block timeout height to prevent the tx from being committed past a certain height
+      --tip string                  Tip is the amount that is going to be transferred to the fee payer on the target chain. This flag is only valid when used with --aux, and is ignored if the target chain didn't enable the TipDecorator
+      --unordered                   Enable unordered transaction delivery; must be used in conjunction with --timeout-duration
+  -y, --yes                         Skip tx broadcasting prompt confirmation
+
+Global Flags:
+      --home string         directory for config and data (default "/home/hari_code/.qorechaind")
+      --log_format string   The logging format (json|plain) (default "plain")
+      --log_level string    The logging level (trace|debug|info|warn|error|fatal|panic|disabled or '*:<level>,<key>:<level>') (default "info")
+      --log_no_color        Disable colored logs
+      --trace               print out full stack trace on errors
+=== qorechaind tx gov submit-proposal --help ===
+Submit a proposal along with some messages, metadata and deposit.
+They should be defined in a JSON file.
+
+Example:
+$ qorechaind tx gov submit-proposal path/to/proposal.json
+
+Where proposal.json contains:
+
+{
+  // array of proto-JSON-encoded sdk.Msgs
+  "messages": [
+    {
+      "@type": "/cosmos.bank.v1beta1.MsgSend",
+      "from_address": "cosmos1...",
+      "to_address": "cosmos1...",
+      "amount":[{"denom": "stake","amount": "10"}]
+    }
+  ],
+  // metadata can be any of base64 encoded, raw text, stringified json, IPFS link to json
+  // see below for example metadata
+  "metadata": "4pIMOgIGx1vZGU=",
+  "deposit": "10stake",
+  "title": "My proposal",
+  "summary": "A short summary of my proposal",
+  "expedited": false
+}
+
+metadata example: 
+{
+	"title": "",
+	"authors": [""],
+	"summary": "",
+	"details": "", 
+	"proposal_forum_url": "",
+	"vote_option_context": "",
+}
+
+Usage:
+  qorechaind tx gov submit-proposal [path/to/proposal.json] [flags]
+
+Flags:
+  -a, --account-number uint         The account number of the signing account (offline mode only)
+      --aux                         Generate aux signer data instead of sending a tx
+  -b, --broadcast-mode string       Transaction broadcasting mode (sync|async) (default "sync")
+      --chain-id string             The network chain ID
+      --dry-run                     ignore the --gas flag and perform a simulation of a transaction, but don't broadcast it (when enabled, the local Keybase is not accessible)
+      --fee-granter string          Fee granter grants fees for the transaction
+      --fee-payer string            Fee payer pays fees for the transaction instead of deducting from the signer
+      --fees string                 Fees to pay along with transaction; eg: 10uatom
+      --from string                 Name or address of private key with which to sign
+      --gas string                  gas limit to set per-transaction; set to "auto" to calculate sufficient gas automatically. Note: "auto" option doesn't always report accurate results. Set a valid coin value to adjust the result. Can be used instead of "fees". (default 200000)
+      --gas-adjustment float        adjustment factor to be multiplied against the estimate returned by the tx simulation; if the gas limit is set manually this flag is ignored  (default 1)
+      --gas-prices string           Gas prices in decimal format to determine the transaction fee (e.g. 0.1uatom)
+      --generate-only               Build an unsigned transaction and write it to STDOUT (when enabled, the local Keybase only accessed when providing a key name)
+  -h, --help                        help for submit-proposal
+      --keyring-backend string      Select keyring's backend (os|file|kwallet|pass|test|memory) (default "os")
+      --keyring-dir string          The client Keyring directory; if omitted, the default 'home' directory will be used
+      --ledger                      Use a connected Ledger device
+      --node string                 <host>:<port> to CometBFT rpc interface for this chain (default "tcp://localhost:26657")
+      --note string                 Note to add a description to the transaction (previously --memo)
+      --offline                     Offline mode (does not allow any online functionality)
+  -o, --output string               Output format (text|json) (default "json")
+  -s, --sequence uint               The sequence number of the signing account (offline mode only)
+      --sign-mode string            Choose sign mode (direct|amino-json|direct-aux|textual), this is an advanced feature
+      --timeout-duration duration   TimeoutDuration is the duration the transaction will be considered valid in the mempool. The transaction's unordered nonce will be set to the time of transaction creation + the duration value passed. If the transaction is still in the mempool, and the block time has passed the time of submission + TimeoutTimestamp, the transaction will be rejected.
+      --timeout-height uint         DEPRECATED: Please use --timeout-duration instead. Set a block timeout height to prevent the tx from being committed past a certain height
+      --tip string                  Tip is the amount that is going to be transferred to the fee payer on the target chain. This flag is only valid when used with --aux, and is ignored if the target chain didn't enable the TipDecorator
+      --unordered                   Enable unordered transaction delivery; must be used in conjunction with --timeout-duration
+  -y, --yes                         Skip tx broadcasting prompt confirmation
+
+Global Flags:
+      --home string         directory for config and data (default "/home/hari_code/.qorechaind")
+      --log_format string   The logging format (json|plain) (default "plain")
+      --log_level string    The logging level (trace|debug|info|warn|error|fatal|panic|disabled or '*:<level>,<key>:<level>') (default "info")
+      --log_no_color        Disable colored logs
+      --trace               print out full stack trace on errors
+=== Runtime loader trace for version command ===
+     11918:	find library=libresolv.so.2 [0]; searching
+     11918:	 search path=/home/hari_code/.local/qorechain/v3.2.10/lib/glibc-hwcaps/x86-64-v4:/home/hari_code/.local/qorechain/v3.2.10/lib/glibc-hwcaps/x86-64-v3:/home/hari_code/.local/qorechain/v3.2.10/lib/glibc-hwcaps/x86-64-v2:/home/hari_code/.local/qorechain/v3.2.10/lib		(RUNPATH from file qorechaind)
+     11918:	  trying file=/home/hari_code/.local/qorechain/v3.2.10/lib/glibc-hwcaps/x86-64-v4/libresolv.so.2
+     11918:	  trying file=/home/hari_code/.local/qorechain/v3.2.10/lib/glibc-hwcaps/x86-64-v3/libresolv.so.2
+     11918:	  trying file=/home/hari_code/.local/qorechain/v3.2.10/lib/glibc-hwcaps/x86-64-v2/libresolv.so.2
+     11918:	  trying file=/home/hari_code/.local/qorechain/v3.2.10/lib/libresolv.so.2
+     11918:	 search path=/home/hari_code/.local/qorechain/v3.2.10/lib:/opt/qorechain/lib/glibc-hwcaps/x86-64-v4:/opt/qorechain/lib/glibc-hwcaps/x86-64-v3:/opt/qorechain/lib/glibc-hwcaps/x86-64-v2:/opt/qorechain/lib:/usr/local/lib/glibc-hwcaps/x86-64-v4:/usr/local/lib/glibc-hwcaps/x86-64-v3:/usr/local/lib/glibc-hwcaps/x86-64-v2:/usr/local/lib		(RUNPATH from file qorechaind)
+     11918:	  trying file=/home/hari_code/.local/qorechain/v3.2.10/lib/libresolv.so.2
+     11918:	  trying file=/opt/qorechain/lib/glibc-hwcaps/x86-64-v4/libresolv.so.2
+     11918:	  trying file=/opt/qorechain/lib/glibc-hwcaps/x86-64-v3/libresolv.so.2
+     11918:	  trying file=/opt/qorechain/lib/glibc-hwcaps/x86-64-v2/libresolv.so.2
+     11918:	  trying file=/opt/qorechain/lib/libresolv.so.2
+     11918:	  trying file=/usr/local/lib/glibc-hwcaps/x86-64-v4/libresolv.so.2
+     11918:	  trying file=/usr/local/lib/glibc-hwcaps/x86-64-v3/libresolv.so.2
+     11918:	  trying file=/usr/local/lib/glibc-hwcaps/x86-64-v2/libresolv.so.2
+     11918:	  trying file=/usr/local/lib/libresolv.so.2
+     11918:	 search cache=/etc/ld.so.cache
+     11918:	  trying file=/lib/x86_64-linux-gnu/libresolv.so.2
+     11918:	
+     11918:	find library=libqorepqc.so [0]; searching
+     11918:	 search path=/home/hari_code/.local/qorechain/v3.2.10/lib		(RUNPATH from file qorechaind)
+     11918:	  trying file=/home/hari_code/.local/qorechain/v3.2.10/lib/libqorepqc.so
+     11918:	
+     11918:	find library=libqoresvm.so [0]; searching
+     11918:	 search path=/home/hari_code/.local/qorechain/v3.2.10/lib		(RUNPATH from file qorechaind)
+     11918:	  trying file=/home/hari_code/.local/qorechain/v3.2.10/lib/libqoresvm.so
+     11918:	
+     11918:	find library=libwasmvmqore_v1.x86_64.so [0]; searching
+     11918:	 search path=/home/hari_code/.local/qorechain/v3.2.10/lib		(RUNPATH from file qorechaind)
+     11918:	  trying file=/home/hari_code/.local/qorechain/v3.2.10/lib/libwasmvmqore_v1.x86_64.so
+     11918:	
+     11918:	find library=libc.so.6 [0]; searching
+     11918:	 search path=/home/hari_code/.local/qorechain/v3.2.10/lib		(RUNPATH from file qorechaind)
+     11918:	  trying file=/home/hari_code/.local/qorechain/v3.2.10/lib/libc.so.6
+     11918:	 search path=/home/hari_code/.local/qorechain/v3.2.10/lib:/usr/local/lib		(RUNPATH from file qorechaind)
+     11918:	  trying file=/home/hari_code/.local/qorechain/v3.2.10/lib/libc.so.6
+     11918:	  trying file=/usr/local/lib/libc.so.6
+     11918:	 search cache=/etc/ld.so.cache
+     11918:	  trying file=/lib/x86_64-linux-gnu/libc.so.6
+     11918:	
+     11918:	find library=libgcc_s.so.1 [0]; searching
+     11918:	 search path=/home/hari_code/.local/qorechain/v3.2.10/lib		(RUNPATH from file qorechaind)
+     11918:	  trying file=/home/hari_code/.local/qorechain/v3.2.10/lib/libgcc_s.so.1
+     11918:	 search cache=/etc/ld.so.cache
+     11918:	  trying file=/lib/x86_64-linux-gnu/libgcc_s.so.1
+     11918:	
+     11918:	find library=libpthread.so.0 [0]; searching
+     11918:	 search path=/home/hari_code/.local/qorechain/v3.2.10/lib		(RUNPATH from file qorechaind)
+     11918:	  trying file=/home/hari_code/.local/qorechain/v3.2.10/lib/libpthread.so.0
+     11918:	 search cache=/etc/ld.so.cache
+     11918:	  trying file=/lib/x86_64-linux-gnu/libpthread.so.0
+     11918:	
+     11918:	find library=libm.so.6 [0]; searching
+     11918:	 search path=/home/hari_code/.local/qorechain/v3.2.10/lib		(RUNPATH from file qorechaind)
+     11918:	  trying file=/home/hari_code/.local/qorechain/v3.2.10/lib/libm.so.6
+     11918:	 search cache=/etc/ld.so.cache
+     11918:	  trying file=/lib/x86_64-linux-gnu/libm.so.6
+     11918:	
+     11918:	find library=libdl.so.2 [0]; searching
+     11918:	 search path=/home/hari_code/.local/qorechain/v3.2.10/lib		(RUNPATH from file qorechaind)
+     11918:	  trying file=/home/hari_code/.local/qorechain/v3.2.10/lib/libdl.so.2
+     11918:	 search cache=/etc/ld.so.cache
+     11918:	  trying file=/lib/x86_64-linux-gnu/libdl.so.2
+     11918:	
+     11918:	
+     11918:	calling init: /lib64/ld-linux-x86-64.so.2
+     11918:	
+     11918:	
+     11918:	calling init: /lib/x86_64-linux-gnu/libc.so.6
+     11918:	
+     11918:	
+     11918:	calling init: /lib/x86_64-linux-gnu/libdl.so.2
+     11918:	
+     11918:	
+     11918:	calling init: /lib/x86_64-linux-gnu/libm.so.6
+     11918:	
+     11918:	
+     11918:	calling init: /lib/x86_64-linux-gnu/libpthread.so.0
+     11918:	
+     11918:	
+     11918:	calling init: /lib/x86_64-linux-gnu/libgcc_s.so.1
+     11918:	
+     11918:	
+     11918:	calling init: /home/hari_code/.local/qorechain/v3.2.10/lib/libwasmvmqore_v1.x86_64.so
+     11918:	
+     11918:	
+     11918:	calling init: /home/hari_code/.local/qorechain/v3.2.10/lib/libqoresvm.so
+     11918:	
+     11918:	
+     11918:	calling init: /home/hari_code/.local/qorechain/v3.2.10/lib/libqorepqc.so
+     11918:	
+     11918:	
+     11918:	calling init: /lib/x86_64-linux-gnu/libresolv.so.2
+     11918:	
+     11918:	
+     11918:	initialize program: qorechaind
+     11918:	
+     11918:	
+     11918:	transferring control: qorechaind
+     11918:	

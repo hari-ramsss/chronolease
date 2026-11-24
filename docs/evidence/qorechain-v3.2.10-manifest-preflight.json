@@ -1,0 +1,49 @@
+﻿{
+    "captured_at_utc":  "2026-11-24T16:34:01.7368284Z",
+    "manifest_url":  "https://download.qore.host/testnet/latest.json",
+    "manifest":  {
+                     "network":  "testnet",
+                     "chainId":  "qorechain-diana",
+                     "version":  "3.2.10",
+                     "binary":  {
+                                    "url":  "https://download.qore.host/testnet/qorechaind-v3.2.10-final-r2-linux-amd64.tar.gz",
+                                    "sha256":  "05bf891db98538dce1d9a710f93e5102c0e9ace79f57b4cbf10ae688c63fecb4",
+                                    "sizeBytes":  111890694
+                                },
+                     "minCompatible":  "3.2.10",
+                     "upgradeType":  "height",
+                     "upgradeHeight":  10654800,
+                     "stateSync":  {
+                                       "rpcServers":  [
+                                                          "https://rpc-testnet.qore.host",
+                                                          "https://rpc-testnet.qore.host"
+                                                      ],
+                                       "trustHeight":  10672906,
+                                       "trustHash":  "95ED3DEBE14C238F9A66A31BCE5988F5975F2E60111829C67ACB80F4C02FDEC7",
+                                       "ts":  "2026-11-24T15:32:11Z"
+                                   },
+                     "peers":  [
+                                   "979491977ad027ec14e247ad18a18b02f0a93389@50.16.249.59:26656",
+                                   "a4c719e2cc39d8c2e7e53d9603f6577b24631957@50.16.249.59:26756"
+                               ],
+                     "seeds":  [
+                                   "979491977ad027ec14e247ad18a18b02f0a93389@50.16.249.59:26656",
+                                   "a4c719e2cc39d8c2e7e53d9603f6577b24631957@50.16.249.59:26756"
+                               ],
+                     "p2pPort":  26656,
+                     "genesis":  {
+                                     "url":  "https://download.qore.host/testnet/genesis.json",
+                                     "sha256":  "c56f1ffd17bebcd51402e4626d06ca3dd5d19cfc0c10d8d60e913fe3ab1f7acc",
+                                     "sizeBytes":  54373
+                                 },
+                     "snapshot":  {
+                                      "url":  "https://download.qore.host/testnet/qore-testnet-snapshot.tar.gz"
+                                  },
+                     "releasedAt":  "2026-11-24T07:40:00Z",
+                     "notes":  "v3.2.10 (final-r2), applied on diana by governance proposal 43 at height 10,654,800. Inner qorechaind sha256 ffc76719d5f31bd59e42176c2d92c2e43e2386b4bcd5686964a847814ae81d3f. Copy the whole lib/ folder."
+                 },
+    "applied_plan_url":  "https://api-testnet.qore.host/cosmos/upgrade/v1beta1/applied_plan/v3.2.10",
+    "applied_plan":  {
+                         "height":  "10654800"
+                     }
+}

@@ -1,0 +1,90 @@
+UTC: 2026-11-24T16:30:53Z
+Command: qorechaind tx pqc cosign /mnt/c/Users/Hari Ram/Documents/chronoquota/docs/evidence/proposal-a-unsigned-tx-v3.2.10.json --from qor1f0zn99as5ymf0m4curxrx4csz096vnrupdtadq --chain-id qorechain-diana --node https://rpc-testnet.qore.host:443 --dry-run
+Usage:
+  qorechaind tx pqc cosign [unsigned-tx.json] [flags]
+
+Flags:
+  -a, --account-number uint         The account number of the signing account (offline mode only)
+      --aux                         Generate aux signer data instead of sending a tx
+  -b, --broadcast-mode string       Transaction broadcasting mode (sync|async) (default "sync")
+      --chain-id string             The network chain ID
+      --dry-run                     ignore the --gas flag and perform a simulation of a transaction, but don't broadcast it (when enabled, the local Keybase is not accessible)
+      --fee-granter string          Fee granter grants fees for the transaction
+      --fee-payer string            Fee payer pays fees for the transaction instead of deducting from the signer
+      --fees string                 Fees to pay along with transaction; eg: 10uatom
+      --from string                 Name or address of private key with which to sign
+      --gas string                  gas limit to set per-transaction; set to "auto" to calculate sufficient gas automatically. Note: "auto" option doesn't always report accurate results. Set a valid coin value to adjust the result. Can be used instead of "fees". (default 200000)
+      --gas-adjustment float        adjustment factor to be multiplied against the estimate returned by the tx simulation; if the gas limit is set manually this flag is ignored  (default 1)
+      --gas-prices string           Gas prices in decimal format to determine the transaction fee (e.g. 0.1uatom)
+      --generate-only               Build an unsigned transaction and write it to STDOUT (when enabled, the local Keybase only accessed when providing a key name)
+  -h, --help                        help for cosign
+      --keyring-backend string      Select keyring's backend (os|file|kwallet|pass|test|memory) (default "os")
+      --keyring-dir string          The client Keyring directory; if omitted, the default 'home' directory will be used
+      --ledger                      Use a connected Ledger device
+      --node string                 <host>:<port> to CometBFT rpc interface for this chain (default "tcp://localhost:26657")
+      --note string                 Note to add a description to the transaction (previously --memo)
+      --offline                     Offline mode (does not allow any online functionality)
+  -o, --output string               Output format (text|json) (default "json")
+      --pqc-key tx pqc gen-key      name of the Dilithium key (created with tx pqc gen-key)
+  -s, --sequence uint               The sequence number of the signing account (offline mode only)
+      --sign-bytes string           hybrid sign-bytes form: auto (ask the chain whether pqc-sign-bytes-v2 is enabled; on a node without that query, whether the v3.2.0 upgrade has been applied, or the name it shipped under earlier), v1 or v2 (default "auto")
+      --sign-mode string            Choose sign mode (direct|amino-json|direct-aux|textual), this is an advanced feature
+      --timeout-duration duration   TimeoutDuration is the duration the transaction will be considered valid in the mempool. The transaction's unordered nonce will be set to the time of transaction creation + the duration value passed. If the transaction is still in the mempool, and the block time has passed the time of submission + TimeoutTimestamp, the transaction will be rejected.
+      --timeout-height uint         DEPRECATED: Please use --timeout-duration instead. Set a block timeout height to prevent the tx from being committed past a certain height
+      --tip string                  Tip is the amount that is going to be transferred to the fee payer on the target chain. This flag is only valid when used with --aux, and is ignored if the target chain didn't enable the TipDecorator
+      --unordered                   Enable unordered transaction delivery; must be used in conjunction with --timeout-duration
+  -y, --yes                         Skip tx broadcasting prompt confirmation
+
+Global Flags:
+      --home string         directory for config and data (default "/home/hari_code/.qorechaind")
+      --log_format string   The logging format (json|plain) (default "plain")
+      --log_level string    The logging level (trace|debug|info|warn|error|fatal|panic|disabled or '*:<level>,<key>:<level>') (default "info")
+      --log_no_color        Disable colored logs
+      --trace               print out full stack trace on errors
+
+--pqc-key is required (a key created with `tx pqc gen-key`)
+UTC: 2026-11-24T16:33:09Z
+Command: qorechaind tx pqc cosign /mnt/c/Users/Hari Ram/Documents/chronoquota/docs/evidence/proposal-a-unsigned-tx-v3.2.10.json --from qor1f0zn99as5ymf0m4curxrx4csz096vnrupdtadq --pqc-key dry-run-no-key --keyring-backend memory --chain-id qorechain-diana --node https://rpc-testnet.qore.host:443 --dry-run
+Usage:
+  qorechaind tx pqc cosign [unsigned-tx.json] [flags]
+
+Flags:
+  -a, --account-number uint         The account number of the signing account (offline mode only)
+      --aux                         Generate aux signer data instead of sending a tx
+  -b, --broadcast-mode string       Transaction broadcasting mode (sync|async) (default "sync")
+      --chain-id string             The network chain ID
+      --dry-run                     ignore the --gas flag and perform a simulation of a transaction, but don't broadcast it (when enabled, the local Keybase is not accessible)
+      --fee-granter string          Fee granter grants fees for the transaction
+      --fee-payer string            Fee payer pays fees for the transaction instead of deducting from the signer
+      --fees string                 Fees to pay along with transaction; eg: 10uatom
+      --from string                 Name or address of private key with which to sign
+      --gas string                  gas limit to set per-transaction; set to "auto" to calculate sufficient gas automatically. Note: "auto" option doesn't always report accurate results. Set a valid coin value to adjust the result. Can be used instead of "fees". (default 200000)
+      --gas-adjustment float        adjustment factor to be multiplied against the estimate returned by the tx simulation; if the gas limit is set manually this flag is ignored  (default 1)
+      --gas-prices string           Gas prices in decimal format to determine the transaction fee (e.g. 0.1uatom)
+      --generate-only               Build an unsigned transaction and write it to STDOUT (when enabled, the local Keybase only accessed when providing a key name)
+  -h, --help                        help for cosign
+      --keyring-backend string      Select keyring's backend (os|file|kwallet|pass|test|memory) (default "os")
+      --keyring-dir string          The client Keyring directory; if omitted, the default 'home' directory will be used
+      --ledger                      Use a connected Ledger device
+      --node string                 <host>:<port> to CometBFT rpc interface for this chain (default "tcp://localhost:26657")
+      --note string                 Note to add a description to the transaction (previously --memo)
+      --offline                     Offline mode (does not allow any online functionality)
+  -o, --output string               Output format (text|json) (default "json")
+      --pqc-key tx pqc gen-key      name of the Dilithium key (created with tx pqc gen-key)
+  -s, --sequence uint               The sequence number of the signing account (offline mode only)
+      --sign-bytes string           hybrid sign-bytes form: auto (ask the chain whether pqc-sign-bytes-v2 is enabled; on a node without that query, whether the v3.2.0 upgrade has been applied, or the name it shipped under earlier), v1 or v2 (default "auto")
+      --sign-mode string            Choose sign mode (direct|amino-json|direct-aux|textual), this is an advanced feature
+      --timeout-duration duration   TimeoutDuration is the duration the transaction will be considered valid in the mempool. The transaction's unordered nonce will be set to the time of transaction creation + the duration value passed. If the transaction is still in the mempool, and the block time has passed the time of submission + TimeoutTimestamp, the transaction will be rejected.
+      --timeout-height uint         DEPRECATED: Please use --timeout-duration instead. Set a block timeout height to prevent the tx from being committed past a certain height
+      --tip string                  Tip is the amount that is going to be transferred to the fee payer on the target chain. This flag is only valid when used with --aux, and is ignored if the target chain didn't enable the TipDecorator
+      --unordered                   Enable unordered transaction delivery; must be used in conjunction with --timeout-duration
+  -y, --yes                         Skip tx broadcasting prompt confirmation
+
+Global Flags:
+      --home string         directory for config and data (default "/home/hari_code/.qorechaind")
+      --log_format string   The logging format (json|plain) (default "plain")
+      --log_level string    The logging level (trace|debug|info|warn|error|fatal|panic|disabled or '*:<level>,<key>:<level>') (default "info")
+      --log_no_color        Disable colored logs
+      --trace               print out full stack trace on errors
+
+load PQC key "dry-run-no-key": open /home/hari_code/.qorechaind/pqc/dry-run-no-key.dilithium: no such file or directory (generate one with `tx pqc gen-key`)

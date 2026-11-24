@@ -1,0 +1,517 @@
+﻿{
+    "captured_at_utc":  "2026-11-24T15:08:01.8121534Z",
+    "chain_id":  "qorechain-diana",
+    "height":  "10673893",
+    "block_time":  "2026-11-24T15:08:00.897621278Z",
+    "response_height":  "10673893",
+    "block":  {
+                  "block_id":  {
+                                   "hash":  "kFfCqG1Z8INONIx4Ls/c5oOh450D3jhZfgliq0Z7n8A=",
+                                   "part_set_header":  {
+                                                           "total":  1,
+                                                           "hash":  "6jmXbAUPKmYUuvje6Ds4CdPo+LfrHPanBhZvt1Ey19k="
+                                                       }
+                               },
+                  "block":  {
+                                "header":  {
+                                               "version":  {
+                                                               "block":  "11",
+                                                               "app":  "0"
+                                                           },
+                                               "chain_id":  "qorechain-diana",
+                                               "height":  "10673893",
+                                               "time":  "2026-11-24T15:08:00.897621278Z",
+                                               "last_block_id":  {
+                                                                     "hash":  "27Lk+8fRTwOm4F43flLh9cTR/A59NLbZzBhSEfZqZFY=",
+                                                                     "part_set_header":  {
+                                                                                             "total":  1,
+                                                                                             "hash":  "1BacRJrVgcYkINl7KukDEgCPJWI5xZqYCcZElFMpzT8="
+                                                                                         }
+                                                                 },
+                                               "last_commit_hash":  "fkc3geLAZCtvpJp9PIOZtt/1U2QMr6hAmIcOMGVpuiQ=",
+                                               "data_hash":  "maEwN1Whuwb5q0LZfkSFi/loyR4GI1sVf4zXzRNVPjo=",
+                                               "validators_hash":  "uf4w63/X7DbJXbsVHKDyF8qyE5oPyT9SDR4bqerMGFM=",
+                                               "next_validators_hash":  "uf4w63/X7DbJXbsVHKDyF8qyE5oPyT9SDR4bqerMGFM=",
+                                               "consensus_hash":  "2XYFHxYg0ViArdTG4tVb4szm+pZCb2vZjS9L6A2Afao=",
+                                               "app_hash":  "gE2CBj0/UwAGuy1JtvvWHqEKG3qhMtdxz9q4XVPaDfg=",
+                                               "last_results_hash":  "47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=",
+                                               "evidence_hash":  "47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=",
+                                               "proposer_address":  "Va0YTxJaMCqnfqqE9RSwa2YDz7k="
+                                           },
+                                "data":  {
+                                             "txs":  [
+                                                         "CugBCrQBCh8vY29zbW9zLmV2bS52bS52MS5Nc2dFdGhlcmV1bVR4EpABKhQkv1RxuW8jP12aTsy98sWr0Km30DJ4Avh1giZIggF+hQLpDt0AhTtfLzYAgwEmL5RjhD1KFItaJorLFfSJQa5t8EJd/ICEHjGm3cCAoBTU4ly3Ehehu8B7Ojy3mXRef/TZeGGxHWdo9GlLpoINoCkIJER6B38YAdvNd24X0l6U737uMNmSZWMx2wMMiYyn+j8uCiwvY29zbW9zLmV2bS52bS52MS5FeHRlbnNpb25PcHRpb25zRXRoZXJldW1UeBIhEh8KGQoEYXFvchIRMTkyMDQzMDUwMDAwMDAwMDAQr8wE"
+                                                     ]
+                                         },
+                                "evidence":  {
+                                                 "evidence":  [
+
+                                                              ]
+                                             },
+                                "last_commit":  {
+                                                    "height":  "10673892",
+                                                    "round":  0,
+                                                    "block_id":  {
+                                                                     "hash":  "27Lk+8fRTwOm4F43flLh9cTR/A59NLbZzBhSEfZqZFY=",
+                                                                     "part_set_header":  {
+                                                                                             "total":  1,
+                                                                                             "hash":  "1BacRJrVgcYkINl7KukDEgCPJWI5xZqYCcZElFMpzT8="
+                                                                                         }
+                                                                 },
+                                                    "signatures":  [
+                                                                       {
+                                                                           "block_id_flag":  "BLOCK_ID_FLAG_COMMIT",
+                                                                           "validator_address":  "+MUnCIbj9I1ptu0YKIPaK4wAc0Y=",
+                                                                           "timestamp":  "2026-11-24T15:08:00.936948991Z",
+                                                                           "signature":  "lobcVrE4NKsZPb3A3bVU57bpzWMkPADowbMIUjuhsRybcLcBVzr3Gx9Yif5keEXl5X1w1nKW74TlMHH1g+43DA=="
+                                                                       },
+                                                                       {
+                                                                           "block_id_flag":  "BLOCK_ID_FLAG_COMMIT",
+                                                                           "validator_address":  "/kyNuSqx6knDuwgoqUQuy4qGTk8=",
+                                                                           "timestamp":  "2026-11-24T15:08:00.897621278Z",
+                                                                           "signature":  "W5fsiBjcnZzBs//bve3Xwc+IlJWHERu+ZsfNlvw/aCk4Lgt7KmPHMYNuqPBzEeaLV9eAV4X833AyHO25uMfvDw=="
+                                                                       },
+                                                                       {
+                                                                           "block_id_flag":  "BLOCK_ID_FLAG_COMMIT",
+                                                                           "validator_address":  "HHE1O8h4Zb4M1QS5ZwOy7X1JJTw=",
+                                                                           "timestamp":  "2026-11-24T15:08:00.890404797Z",
+                                                                           "signature":  "fGrPAQ7pkX64sswgftPO3GlyPaor4c9Cn8Yg1mKeuonx+tQg0t07wgBaL0v7tPXDpNjUg2cv2YFYUVYZxhKuAQ=="
+                                                                       },
+                                                                       {
+                                                                           "block_id_flag":  "BLOCK_ID_FLAG_COMMIT",
+                                                                           "validator_address":  "Va0YTxJaMCqnfqqE9RSwa2YDz7k=",
+                                                                           "timestamp":  "2026-11-24T15:08:00.874673260Z",
+                                                                           "signature":  "UKtYKdduugjf7fjyn1sgJ8yevMG/QlfG9+AwVwdqIIb0ffNJBjkUIgOVvFoT2XiipOG+iEhPewY1vdg0FdaZAQ=="
+                                                                       }
+                                                                   ]
+                                                }
+                            },
+                  "sdk_block":  {
+                                    "header":  {
+                                                   "version":  {
+                                                                   "block":  "11",
+                                                                   "app":  "0"
+                                                               },
+                                                   "chain_id":  "qorechain-diana",
+                                                   "height":  "10673893",
+                                                   "time":  "2026-11-24T15:08:00.897621278Z",
+                                                   "last_block_id":  {
+                                                                         "hash":  "27Lk+8fRTwOm4F43flLh9cTR/A59NLbZzBhSEfZqZFY=",
+                                                                         "part_set_header":  {
+                                                                                                 "total":  1,
+                                                                                                 "hash":  "1BacRJrVgcYkINl7KukDEgCPJWI5xZqYCcZElFMpzT8="
+                                                                                             }
+                                                                     },
+                                                   "last_commit_hash":  "fkc3geLAZCtvpJp9PIOZtt/1U2QMr6hAmIcOMGVpuiQ=",
+                                                   "data_hash":  "maEwN1Whuwb5q0LZfkSFi/loyR4GI1sVf4zXzRNVPjo=",
+                                                   "validators_hash":  "uf4w63/X7DbJXbsVHKDyF8qyE5oPyT9SDR4bqerMGFM=",
+                                                   "next_validators_hash":  "uf4w63/X7DbJXbsVHKDyF8qyE5oPyT9SDR4bqerMGFM=",
+                                                   "consensus_hash":  "2XYFHxYg0ViArdTG4tVb4szm+pZCb2vZjS9L6A2Afao=",
+                                                   "app_hash":  "gE2CBj0/UwAGuy1JtvvWHqEKG3qhMtdxz9q4XVPaDfg=",
+                                                   "last_results_hash":  "47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=",
+                                                   "evidence_hash":  "47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=",
+                                                   "proposer_address":  "qorvalcons12kk3sncjtgcz4fm742z0299sddnq8naegu3pkt"
+                                               },
+                                    "data":  {
+                                                 "txs":  [
+                                                             "CugBCrQBCh8vY29zbW9zLmV2bS52bS52MS5Nc2dFdGhlcmV1bVR4EpABKhQkv1RxuW8jP12aTsy98sWr0Km30DJ4Avh1giZIggF+hQLpDt0AhTtfLzYAgwEmL5RjhD1KFItaJorLFfSJQa5t8EJd/ICEHjGm3cCAoBTU4ly3Ehehu8B7Ojy3mXRef/TZeGGxHWdo9GlLpoINoCkIJER6B38YAdvNd24X0l6U737uMNmSZWMx2wMMiYyn+j8uCiwvY29zbW9zLmV2bS52bS52MS5FeHRlbnNpb25PcHRpb25zRXRoZXJldW1UeBIhEh8KGQoEYXFvchIRMTkyMDQzMDUwMDAwMDAwMDAQr8wE"
+                                                         ]
+                                             },
+                                    "evidence":  {
+                                                     "evidence":  [
+
+                                                                  ]
+                                                 },
+                                    "last_commit":  {
+                                                        "height":  "10673892",
+                                                        "round":  0,
+                                                        "block_id":  {
+                                                                         "hash":  "27Lk+8fRTwOm4F43flLh9cTR/A59NLbZzBhSEfZqZFY=",
+                                                                         "part_set_header":  {
+                                                                                                 "total":  1,
+                                                                                                 "hash":  "1BacRJrVgcYkINl7KukDEgCPJWI5xZqYCcZElFMpzT8="
+                                                                                             }
+                                                                     },
+                                                        "signatures":  [
+                                                                           {
+                                                                               "block_id_flag":  "BLOCK_ID_FLAG_COMMIT",
+                                                                               "validator_address":  "+MUnCIbj9I1ptu0YKIPaK4wAc0Y=",
+                                                                               "timestamp":  "2026-11-24T15:08:00.936948991Z",
+                                                                               "signature":  "lobcVrE4NKsZPb3A3bVU57bpzWMkPADowbMIUjuhsRybcLcBVzr3Gx9Yif5keEXl5X1w1nKW74TlMHH1g+43DA=="
+                                                                           },
+                                                                           {
+                                                                               "block_id_flag":  "BLOCK_ID_FLAG_COMMIT",
+                                                                               "validator_address":  "/kyNuSqx6knDuwgoqUQuy4qGTk8=",
+                                                                               "timestamp":  "2026-11-24T15:08:00.897621278Z",
+                                                                               "signature":  "W5fsiBjcnZzBs//bve3Xwc+IlJWHERu+ZsfNlvw/aCk4Lgt7KmPHMYNuqPBzEeaLV9eAV4X833AyHO25uMfvDw=="
+                                                                           },
+                                                                           {
+                                                                               "block_id_flag":  "BLOCK_ID_FLAG_COMMIT",
+                                                                               "validator_address":  "HHE1O8h4Zb4M1QS5ZwOy7X1JJTw=",
+                                                                               "timestamp":  "2026-11-24T15:08:00.890404797Z",
+                                                                               "signature":  "fGrPAQ7pkX64sswgftPO3GlyPaor4c9Cn8Yg1mKeuonx+tQg0t07wgBaL0v7tPXDpNjUg2cv2YFYUVYZxhKuAQ=="
+                                                                           },
+                                                                           {
+                                                                               "block_id_flag":  "BLOCK_ID_FLAG_COMMIT",
+                                                                               "validator_address":  "Va0YTxJaMCqnfqqE9RSwa2YDz7k=",
+                                                                               "timestamp":  "2026-11-24T15:08:00.874673260Z",
+                                                                               "signature":  "UKtYKdduugjf7fjyn1sgJ8yevMG/QlfG9+AwVwdqIIb0ffNJBjkUIgOVvFoT2XiipOG+iEhPewY1vdg0FdaZAQ=="
+                                                                           }
+                                                                       ]
+                                                    }
+                                }
+              },
+    "queries":  [
+                    {
+                        "uri":  "https://api-testnet.qore.host/cosmos/auth/v1beta1/module_accounts/gov",
+                        "status":  200,
+                        "height":  "10673890",
+                        "http_date":  "Tue, 24 Nov 2026 15:07:58 GMT",
+                        "body":  {
+                                     "account":  {
+                                                     "@type":  "/cosmos.auth.v1beta1.ModuleAccount",
+                                                     "base_account":  {
+                                                                          "address":  "qor10d07y265gmmuvt4z0w9aw880jnsr700jwfyxr3",
+                                                                          "pub_key":  null,
+                                                                          "account_number":  "9",
+                                                                          "sequence":  "0"
+                                                                      },
+                                                     "name":  "gov",
+                                                     "permissions":  [
+                                                                         "burner"
+                                                                     ]
+                                                 }
+                                 }
+                    },
+                    {
+                        "uri":  "https://api-testnet.qore.host/cosmwasm/wasm/v1/codes/params",
+                        "status":  200,
+                        "height":  "10673890",
+                        "http_date":  "Tue, 24 Nov 2026 15:07:59 GMT",
+                        "body":  {
+                                     "params":  {
+                                                    "code_upload_access":  {
+                                                                               "permission":  "Nobody",
+                                                                               "addresses":  [
+
+                                                                                             ]
+                                                                           },
+                                                    "instantiate_default_permission":  "Everybody"
+                                                }
+                                 }
+                    },
+                    {
+                        "uri":  "https://api-testnet.qore.host/cosmos/circuit/v1/disable_list",
+                        "status":  200,
+                        "height":  "10673890",
+                        "http_date":  "Tue, 24 Nov 2026 15:07:59 GMT",
+                        "body":  {
+                                     "disabled_list":  [
+                                                           "/cosmwasm.wasm.v1.MsgStoreCode"
+                                                       ]
+                                 }
+                    },
+                    {
+                        "uri":  "https://api-testnet.qore.host/qorechain/crossvm/v1/params",
+                        "status":  200,
+                        "height":  "10673890",
+                        "http_date":  "Tue, 24 Nov 2026 15:07:59 GMT",
+                        "body":  {
+                                     "max_message_size":  "65536",
+                                     "max_queue_size":  1000,
+                                     "queue_timeout_blocks":  "100",
+                                     "enabled":  true,
+                                     "bridge_allowed_targets":  [
+                                                                    "cosmwasm:qor14hj2tavq8fpesdwxxcu44rty3hh90vhujrvcmstl4zr3txmfvw9s93uuqt",
+                                                                    "cosmwasm:qor1ufs3tlq4umljk0qfe8k5ya0x6hpavn897u2cnf9k0en9jr7qarqqmjalsd",
+                                                                    "cosmwasm:qor1nc5tatafv6eyq7llkr2gv50ff9e22mnf70qgjlv737ktmt4eswrqfye7zd",
+                                                                    "cosmwasm:qor1xjayq5ev55tkzpml9klxwyshr7gdrha0nurha9jhm0f0gdckksgs3gltw8",
+                                                                    "svm:11111111111111111111111111111111"
+                                                                ],
+                                     "bridge_target_pins":  [
+                                                                {
+                                                                    "target":  "cosmwasm:qor14hj2tavq8fpesdwxxcu44rty3hh90vhujrvcmstl4zr3txmfvw9s93uuqt",
+                                                                    "code_id":  "1",
+                                                                    "history_len":  "1",
+                                                                    "svm_code_hash":  null,
+                                                                    "svm_deploy_slot":  "0"
+                                                                },
+                                                                {
+                                                                    "target":  "cosmwasm:qor1ufs3tlq4umljk0qfe8k5ya0x6hpavn897u2cnf9k0en9jr7qarqqmjalsd",
+                                                                    "code_id":  "5",
+                                                                    "history_len":  "1",
+                                                                    "svm_code_hash":  null,
+                                                                    "svm_deploy_slot":  "0"
+                                                                },
+                                                                {
+                                                                    "target":  "cosmwasm:qor1nc5tatafv6eyq7llkr2gv50ff9e22mnf70qgjlv737ktmt4eswrqfye7zd",
+                                                                    "code_id":  "6",
+                                                                    "history_len":  "2",
+                                                                    "svm_code_hash":  null,
+                                                                    "svm_deploy_slot":  "0"
+                                                                },
+                                                                {
+                                                                    "target":  "cosmwasm:qor1xjayq5ev55tkzpml9klxwyshr7gdrha0nurha9jhm0f0gdckksgs3gltw8",
+                                                                    "code_id":  "865",
+                                                                    "history_len":  "1",
+                                                                    "svm_code_hash":  null,
+                                                                    "svm_deploy_slot":  "0"
+                                                                }
+                                                            ],
+                                     "max_pending_per_sender":  100,
+                                     "max_cosmos_tx_gas":  "50000000",
+                                     "record_retention_blocks":  "100000",
+                                     "max_block_wasm_gas":  "3000000",
+                                     "max_tx_wasm_share_bps":  5000,
+                                     "max_block_level_wasm_gas":  "10000000",
+                                     "queue_wasm_reserve_bps":  2500,
+                                     "wasm_congestion_max_factor":  20,
+                                     "wasm_congestion_target_bps":  5000,
+                                     "wasm_congestion_factor_micro":  "1000000",
+                                     "max_block_upload_bps":  5000,
+                                     "max_queue_timeouts_per_block":  100,
+                                     "bridge_svm_strict_cpi":  [
+
+                                                               ],
+                                     "bridge_svm_strict_delisted":  [
+
+                                                                    ]
+                                 }
+                    },
+                    {
+                        "uri":  "https://api-testnet.qore.host/cosmwasm/wasm/v1/code?pagination.reverse=true\u0026pagination.limit=1",
+                        "status":  200,
+                        "height":  "10673891",
+                        "http_date":  "Tue, 24 Nov 2026 15:08:00 GMT",
+                        "body":  {
+                                     "code_infos":  [
+                                                        {
+                                                            "code_id":  "865",
+                                                            "creator":  "qor10d07y265gmmuvt4z0w9aw880jnsr700jwfyxr3",
+                                                            "data_hash":  "6EBFC32FB9A9C8A412FDB071FB2C317B780BA05F637B8A4D274001C95FB5C43C",
+                                                            "instantiate_permission":  {
+                                                                                           "permission":  "Everybody",
+                                                                                           "addresses":  [
+
+                                                                                                         ]
+                                                                                       }
+                                                        }
+                                                    ],
+                                     "pagination":  {
+                                                        "next_key":  "AAAAAAAAA2A=",
+                                                        "total":  "0"
+                                                    }
+                                 }
+                    },
+                    {
+                        "uri":  "https://api-testnet.qore.host/cosmos/gov/v1/params/deposit",
+                        "status":  200,
+                        "height":  "10673891",
+                        "http_date":  "Tue, 24 Nov 2026 15:08:00 GMT",
+                        "body":  {
+                                     "voting_params":  null,
+                                     "deposit_params":  {
+                                                            "min_deposit":  [
+                                                                                {
+                                                                                    "denom":  "uqor",
+                                                                                    "amount":  "10000000"
+                                                                                }
+                                                                            ],
+                                                            "max_deposit_period":  "172800s"
+                                                        },
+                                     "tally_params":  null,
+                                     "params":  {
+                                                    "min_deposit":  [
+                                                                        {
+                                                                            "denom":  "uqor",
+                                                                            "amount":  "10000000"
+                                                                        }
+                                                                    ],
+                                                    "max_deposit_period":  "172800s",
+                                                    "voting_period":  "14400s",
+                                                    "quorum":  "0.334000000000000000",
+                                                    "threshold":  "0.500000000000000000",
+                                                    "veto_threshold":  "0.334000000000000000",
+                                                    "min_initial_deposit_ratio":  "0.000000000000000000",
+                                                    "proposal_cancel_ratio":  "0.500000000000000000",
+                                                    "proposal_cancel_dest":  "",
+                                                    "expedited_voting_period":  "3600s",
+                                                    "expedited_threshold":  "0.667000000000000000",
+                                                    "expedited_min_deposit":  [
+                                                                                  {
+                                                                                      "denom":  "uqor",
+                                                                                      "amount":  "50000000"
+                                                                                  }
+                                                                              ],
+                                                    "burn_vote_quorum":  false,
+                                                    "burn_proposal_deposit_prevote":  false,
+                                                    "burn_vote_veto":  true,
+                                                    "min_deposit_ratio":  "0.010000000000000000"
+                                                }
+                                 }
+                    },
+                    {
+                        "uri":  "https://api-testnet.qore.host/cosmos/gov/v1/params/voting",
+                        "status":  200,
+                        "height":  "10673891",
+                        "http_date":  "Tue, 24 Nov 2026 15:08:00 GMT",
+                        "body":  {
+                                     "voting_params":  {
+                                                           "voting_period":  "14400s"
+                                                       },
+                                     "deposit_params":  null,
+                                     "tally_params":  null,
+                                     "params":  {
+                                                    "min_deposit":  [
+                                                                        {
+                                                                            "denom":  "uqor",
+                                                                            "amount":  "10000000"
+                                                                        }
+                                                                    ],
+                                                    "max_deposit_period":  "172800s",
+                                                    "voting_period":  "14400s",
+                                                    "quorum":  "0.334000000000000000",
+                                                    "threshold":  "0.500000000000000000",
+                                                    "veto_threshold":  "0.334000000000000000",
+                                                    "min_initial_deposit_ratio":  "0.000000000000000000",
+                                                    "proposal_cancel_ratio":  "0.500000000000000000",
+                                                    "proposal_cancel_dest":  "",
+                                                    "expedited_voting_period":  "3600s",
+                                                    "expedited_threshold":  "0.667000000000000000",
+                                                    "expedited_min_deposit":  [
+                                                                                  {
+                                                                                      "denom":  "uqor",
+                                                                                      "amount":  "50000000"
+                                                                                  }
+                                                                              ],
+                                                    "burn_vote_quorum":  false,
+                                                    "burn_proposal_deposit_prevote":  false,
+                                                    "burn_vote_veto":  true,
+                                                    "min_deposit_ratio":  "0.010000000000000000"
+                                                }
+                                 }
+                    },
+                    {
+                        "uri":  "https://api-testnet.qore.host/cosmos/gov/v1/params/tallying",
+                        "status":  200,
+                        "height":  "10673891",
+                        "http_date":  "Tue, 24 Nov 2026 15:08:00 GMT",
+                        "body":  {
+                                     "voting_params":  null,
+                                     "deposit_params":  null,
+                                     "tally_params":  {
+                                                          "quorum":  "0.334000000000000000",
+                                                          "threshold":  "0.500000000000000000",
+                                                          "veto_threshold":  "0.334000000000000000"
+                                                      },
+                                     "params":  {
+                                                    "min_deposit":  [
+                                                                        {
+                                                                            "denom":  "uqor",
+                                                                            "amount":  "10000000"
+                                                                        }
+                                                                    ],
+                                                    "max_deposit_period":  "172800s",
+                                                    "voting_period":  "14400s",
+                                                    "quorum":  "0.334000000000000000",
+                                                    "threshold":  "0.500000000000000000",
+                                                    "veto_threshold":  "0.334000000000000000",
+                                                    "min_initial_deposit_ratio":  "0.000000000000000000",
+                                                    "proposal_cancel_ratio":  "0.500000000000000000",
+                                                    "proposal_cancel_dest":  "",
+                                                    "expedited_voting_period":  "3600s",
+                                                    "expedited_threshold":  "0.667000000000000000",
+                                                    "expedited_min_deposit":  [
+                                                                                  {
+                                                                                      "denom":  "uqor",
+                                                                                      "amount":  "50000000"
+                                                                                  }
+                                                                              ],
+                                                    "burn_vote_quorum":  false,
+                                                    "burn_proposal_deposit_prevote":  false,
+                                                    "burn_vote_veto":  true,
+                                                    "min_deposit_ratio":  "0.010000000000000000"
+                                                }
+                                 }
+                    },
+                    {
+                        "uri":  "https://api-testnet.qore.host/cosmos/evm/feemarket/v1/params",
+                        "status":  200,
+                        "height":  "10673891",
+                        "http_date":  "Tue, 24 Nov 2026 15:08:01 GMT",
+                        "body":  {
+                                     "params":  {
+                                                    "no_base_fee":  false,
+                                                    "base_fee_change_denominator":  8,
+                                                    "elasticity_multiplier":  2,
+                                                    "enable_height":  "0",
+                                                    "base_fee":  "0.100000000000000000",
+                                                    "min_gas_price":  "0.100000000000000000",
+                                                    "min_gas_multiplier":  "0.500000000000000000"
+                                                }
+                                 }
+                    },
+                    {
+                        "uri":  "https://api-testnet.qore.host/cosmos/evm/feemarket/v1/base_fee",
+                        "status":  200,
+                        "height":  "10673892",
+                        "http_date":  "Tue, 24 Nov 2026 15:08:01 GMT",
+                        "body":  {
+                                     "base_fee":  "0.100000000000000000"
+                                 }
+                    },
+                    {
+                        "uri":  "https://api-testnet.qore.host/cosmos/consensus/v1/params",
+                        "status":  200,
+                        "height":  "10673892",
+                        "http_date":  "Tue, 24 Nov 2026 15:08:01 GMT",
+                        "body":  {
+                                     "params":  {
+                                                    "block":  {
+                                                                  "max_bytes":  "22020096",
+                                                                  "max_gas":  "500000000"
+                                                              },
+                                                    "evidence":  {
+                                                                     "max_age_num_blocks":  "100000",
+                                                                     "max_age_duration":  "172800s",
+                                                                     "max_bytes":  "1048576"
+                                                                 },
+                                                    "validator":  {
+                                                                      "pub_key_types":  [
+                                                                                            "ed25519"
+                                                                                        ]
+                                                                  },
+                                                    "version":  {
+                                                                    "app":  "0"
+                                                                },
+                                                    "abci":  {
+                                                                 "vote_extensions_enable_height":  "0"
+                                                             }
+                                                }
+                                 }
+                    },
+                    {
+                        "uri":  "https://api-testnet.qore.host/cosmos/upgrade/v1beta1/applied_plan/v3.2.9",
+                        "status":  200,
+                        "height":  "10673892",
+                        "http_date":  "Tue, 24 Nov 2026 15:08:02 GMT",
+                        "body":  {
+                                     "height":  "10424000"
+                                 }
+                    },
+                    {
+                        "uri":  "https://api-testnet.qore.host/cosmos/upgrade/v1beta1/applied_plan/v3.2.10",
+                        "status":  200,
+                        "height":  "10673892",
+                        "http_date":  "Tue, 24 Nov 2026 15:08:02 GMT",
+                        "body":  {
+                                     "height":  "10654800"
+                                 }
+                    },
+                    {
+                        "uri":  "https://api-testnet.qore.host/cosmos/tx/v1beta1/params",
+                        "error":  "The remote server returned an error: (501) Not Implemented."
+                    }
+                ],
+    "operator_account_balance":  "Not queried: no public account address was supplied; wallet storage was not accessed."
+}

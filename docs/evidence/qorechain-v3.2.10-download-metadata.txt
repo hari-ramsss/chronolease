@@ -1,0 +1,7 @@
+Download URL: https://download.qore.host/testnet/qorechaind-v3.2.10-final-r2-linux-amd64.tar.gz
+Started UTC: 2026-11-24T15:35:54Z
+Completed UTC: 2026-11-24T15:36:16Z
+Expected SHA-256: 05bf891db98538dce1d9a710f93e5102c0e9ace79f57b4cbf10ae688c63fecb4
+Actual SHA-256: 05bf891db98538dce1d9a710f93e5102c0e9ace79f57b4cbf10ae688c63fecb4
+Expected size: 111890694
+Actual size: 111890694

@@ -1,0 +1,4 @@
+UTC: 2026-11-24T16:30:07Z
+Command: qorechaind tx gov submit-proposal /mnt/c/Users/Hari Ram/Documents/chronoquota/artifacts/proposals/proposal-a-store-probe.json --from qor1f0zn99as5ymf0m4curxrx4csz096vnrupdtadq --chain-id qorechain-diana --node https://rpc-testnet.qore.host:443 --generate-only --output json
+Generated unsigned transaction at /mnt/c/Users/Hari Ram/Documents/chronoquota/docs/evidence/proposal-a-unsigned-tx-v3.2.10.json
+JSON syntax: valid

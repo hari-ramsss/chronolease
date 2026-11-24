@@ -1,0 +1,87 @@
+﻿{
+    "captured_at_utc":  "2026-11-24T15:07:55.4106598Z",
+    "proposal39_url":  "https://api-testnet.qore.host/cosmos/gov/v1/proposals/39",
+    "proposal39":  {
+                       "proposal":  {
+                                        "id":  "39",
+                                        "messages":  [
+                                                         {
+                                                             "@type":  "/cosmos.upgrade.v1beta1.MsgSoftwareUpgrade",
+                                                             "authority":  "qor10d07y265gmmuvt4z0w9aw880jnsr700jwfyxr3",
+                                                             "plan":  {
+                                                                          "name":  "v3.2.9",
+                                                                          "time":  "0001-01-01T00:00:00Z",
+                                                                          "height":  "10424000",
+                                                                          "info":  "qorechaind v3.2.9 (final-r26), sha256 29a74776c93d8390266dbb9be56dda55bb44c42aa6ff75654af1a0a00056a4c9; artifact qore-artifact-v3.2.9-final-r26-linux-amd64.tgz sha256 58bf0894010e3bab77a373b723aa7bf50cf93bfa9f5ce49ade4bdb06dbafc1a2 (copy the whole lib/ folder)",
+                                                                          "upgraded_client_state":  null
+                                                                      }
+                                                         }
+                                                     ],
+                                        "status":  "PROPOSAL_STATUS_PASSED",
+                                        "final_tally_result":  {
+                                                                   "yes_count":  "337070841086684809",
+                                                                   "abstain_count":  "0",
+                                                                   "no_count":  "0",
+                                                                   "no_with_veto_count":  "0"
+                                                               },
+                                        "submit_time":  "2026-11-19T08:31:57.626295387Z",
+                                        "deposit_end_time":  "2026-11-21T08:31:57.626295387Z",
+                                        "total_deposit":  [
+                                                              {
+                                                                  "denom":  "uqor",
+                                                                  "amount":  "50000000"
+                                                              }
+                                                          ],
+                                        "voting_start_time":  "2026-11-19T08:31:57.626295387Z",
+                                        "voting_end_time":  "2026-11-19T09:31:57.626295387Z",
+                                        "metadata":  "",
+                                        "title":  "Upgrade to v3.2.9 (testnet)",
+                                        "summary":  "Coordinated upgrade to qorechaind v3.2.9. Light node rewards are now paid out continuously every 100 blocks, split by stake and uptime within the 2,000 QOR per month cap; the reward reserve is released and registered nodes receive a one-time credit for the time they ran before this upgrade. Also included: Solana-compatible relay and gateway hardening (per payer quotas, fair sharing, bounded carrier lifetime) and security fixes across the EVM, CosmWasm and Solana-compatible lanes. Gas for existing transaction kinds is unchanged. Node operators must copy the whole lib/ folder of the bundle; the node refuses to start with libraries from another build. Validators stay on v3.2.8 and swap at the plan height.",
+                                        "proposer":  "qor1hz907zyx2t9ax2fj0y8hhspc5rpnxuegrfzzr9",
+                                        "expedited":  true,
+                                        "failed_reason":  ""
+                                    }
+                   },
+    "official_live_manifest_url":  "https://download.qore.host/testnet/latest.json",
+    "official_live_manifest":  {
+                                   "network":  "testnet",
+                                   "chainId":  "qorechain-diana",
+                                   "version":  "3.2.10",
+                                   "binary":  {
+                                                  "url":  "https://download.qore.host/testnet/qorechaind-v3.2.10-final-r2-linux-amd64.tar.gz",
+                                                  "sha256":  "05bf891db98538dce1d9a710f93e5102c0e9ace79f57b4cbf10ae688c63fecb4",
+                                                  "sizeBytes":  111890694
+                                              },
+                                   "minCompatible":  "3.2.10",
+                                   "upgradeType":  "height",
+                                   "upgradeHeight":  10654800,
+                                   "stateSync":  {
+                                                     "rpcServers":  [
+                                                                        "https://rpc-testnet.qore.host",
+                                                                        "https://rpc-testnet.qore.host"
+                                                                    ],
+                                                     "trustHeight":  10667773,
+                                                     "trustHash":  "8F7E1CE0AD0D4BD2DFB7B14B7DBDC745A92F520CE472AB0B7D24F392F24F3030",
+                                                     "ts":  "2026-11-24T13:29:56Z"
+                                                 },
+                                   "peers":  [
+                                                 "979491977ad027ec14e247ad18a18b02f0a93389@50.16.249.59:26656",
+                                                 "a4c719e2cc39d8c2e7e53d9603f6577b24631957@50.16.249.59:26756"
+                                             ],
+                                   "seeds":  [
+                                                 "979491977ad027ec14e247ad18a18b02f0a93389@50.16.249.59:26656",
+                                                 "a4c719e2cc39d8c2e7e53d9603f6577b24631957@50.16.249.59:26756"
+                                             ],
+                                   "p2pPort":  26656,
+                                   "genesis":  {
+                                                   "url":  "https://download.qore.host/testnet/genesis.json",
+                                                   "sha256":  "c56f1ffd17bebcd51402e4626d06ca3dd5d19cfc0c10d8d60e913fe3ab1f7acc",
+                                                   "sizeBytes":  54373
+                                               },
+                                   "snapshot":  {
+                                                    "url":  "https://download.qore.host/testnet/qore-testnet-snapshot.tar.gz"
+                                                },
+                                   "releasedAt":  "2026-11-24T07:40:00Z",
+                                   "notes":  "v3.2.10 (final-r2), applied on diana by governance proposal 43 at height 10,654,800. Inner qorechaind sha256 ffc76719d5f31bd59e42176c2d92c2e43e2386b4bcd5686964a847814ae81d3f. Copy the whole lib/ folder."
+                               }
+}
