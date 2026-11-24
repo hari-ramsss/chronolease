@@ -1,0 +1,20 @@
+[package]
+name = "qorelease-registry"
+version = "0.1.0"
+edition = "2021"
+license = "MIT"
+description = "QoreLease Native provider registry and capacity reservations"
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[features]
+library = []
+
+[dependencies]
+cosmwasm-schema = "1.5.11"
+cosmwasm-std = { version = "1.5.11", features = ["staking"] }
+cw2 = "1.1.2"
+cw-storage-plus = "1.2.0"
+serde = { version = "1.0", default-features = false, features = ["derive"] }
+thiserror = "1.0"
