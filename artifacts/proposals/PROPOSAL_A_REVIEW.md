@@ -18,7 +18,7 @@ Optimized Wasm size is 169,218 bytes; its SHA-256 is `4b0125a5b04a93295ebf6f8f15
 
 ## Live Diana data used in JSON
 
-The original snapshot was superseded by the fresh read-only preflight at height `10672800`, time `2026-11-24T14:41:55.560917121Z`. Full evidence: `docs/evidence/proposal-a-final-live-preflight.json`; query responses were at heights `10672797`–`10672799`.
+The original snapshot was superseded by the fresh read-only preflight at height `10673181`, time `2026-11-24T14:50:59.553178651Z`. Full evidence: `docs/evidence/proposal-a-final-live-preflight.json`; query responses were at heights `10673178`–`10673180`.
 
 - Governance module account: `qor10d07y265gmmuvt4z0w9aw880jnsr700jwfyxr3`.
 - Upload permission `Nobody`; default instantiate permission `Everybody`.
@@ -26,6 +26,7 @@ The original snapshot was superseded by the fresh read-only preflight at height 
 - Last code ID at snapshot: `865`; not included in the proposal.
 - Regular deposit `10000000uqor`; voting period `14400s`; `expedited=false`.
 - Cross-VM is enabled. Max message size is `65536`; max Cosmos tx gas `50000000`; max block Wasm gas `3000000`; current targets and pins are in the snapshot.
+- Consensus block max gas is `500000000`.
 - EVM fee-market base fee and minimum gas price are both `0.1uqor`/gas. Generic transaction-parameter endpoints returned HTTP 501, so exact gas and fees must be estimated using the official CLI and live state must be refreshed immediately before any later submission.
 
 The JSON has exactly three messages in order: reset breaker, store code from the governance account, trip breaker. It has no instantiate message or code ID. The breaker exception is scoped to atomic proposal execution. Later instantiation must use the ID returned by successful storage.
