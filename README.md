@@ -8,16 +8,16 @@
 **Target network:** QoreChain Diana testnet (`qorechain-diana`, EVM chain ID `9800`)  
 **Target hackathon category:** Cross-VM  
 **Primary implementation document:** This README  
-**Technical source index:** [`docs/SOURCE_REFERENCE.md`](docs/SOURCE_REFERENCE.md)
+**Technical source index:** [`SOURCES.md`](SOURCES.md)
 
 ---
 
-## 0. Instructions for the coding agent — read first
+## 0. Instructions for the coding agent Ã¢â‚¬â€ read first
 
 This repository starts as a specification, not as an invitation to immediately generate the entire application.
 
-1. Read this README completely and then read [`docs/SOURCE_REFERENCE.md`](docs/SOURCE_REFERENCE.md).
-2. Treat the **feasibility gates** in §4 as blocking. Do not build the marketplace, dashboard, AI agents, or full protocol before the gates pass.
+1. Read this README completely and then read [`SOURCES.md`](SOURCES.md).
+2. Treat the **feasibility gates** in Ã‚Â§4 as blocking. Do not build the marketplace, dashboard, AI agents, or full protocol before the gates pass.
 3. Do not assume a standard CosmWasm feature is enabled by QoreChain merely because it exists in `cosmwasm-std`. In particular, `StakingQuery::AllDelegations` is a mandatory test, not an established QoreChain capability.
 4. Do not describe the project as trustless proof of physical GPU ownership or AI-answer correctness. It can enforce declared capacity and settle based on independently measured service-level evidence.
 5. Re-read the live Diana testnet parameters before every deployment or cross-VM integration test. Network status, allowlists, circuit breakers, gas limits, and governance parameters can change.
@@ -49,7 +49,7 @@ QoreLease aims to provide a shared commitment and settlement layer:
 
 ### Example use case
 
-A buyer agent needs **70 document-extraction requests** from 10:00–10:15. It requires at least 98% successful responses, a p95 latency below 800 ms, and a maximum spend of 20 fUSD.
+A buyer agent needs **70 document-extraction requests** from 10:00Ã¢â‚¬â€œ10:15. It requires at least 98% successful responses, a p95 latency below 800 ms, and a maximum spend of 20 fUSD.
 
 Provider A has published one 100-unit capacity slot for that window. Buyer A reserves 70 units. A second buyer then attempts to reserve 50 units from the same slot. The second reservation must fail because only 30 units remain. The second buyer's EVM escrow transfer must roll back with the rejected Native reservation.
 
@@ -79,7 +79,7 @@ This question must have a technically defensible answer. A capacity mapping, esc
 | Native staking eligibility check | Native / CosmWasm | Potential use of the Cosmos staking module from the Native runtime; **not yet proven available to CosmWasm contracts on QoreChain** |
 | Buyer fUSD escrow | EVM / Solidity | Buyer-side financial contract and ERC-20 flow |
 | Signed service-evidence verification and payout rules | EVM / Solidity | Buyer-side settlement logic |
-| Cross-runtime transaction coordination | EVM → Native synchronous bridge | Reserve Native capacity in the same transaction as EVM escrow |
+| Cross-runtime transaction coordination | EVM Ã¢â€ â€™ Native synchronous bridge | Reserve Native capacity in the same transaction as EVM escrow |
 | Actual inference / API processing | Off-chain provider infrastructure | Workload execution must not run inside the contracts |
 
 ### What is confirmed by QoreChain documentation
@@ -152,11 +152,11 @@ Use a fixed workload and an agreed response schema. The contract should verify s
 
 ---
 
-## 4. Mandatory feasibility gates — do these before product implementation
+## 4. Mandatory feasibility gates Ã¢â‚¬â€ do these before product implementation
 
 The project is not approved for full implementation until the following tests have evidence.
 
-### Gate G0-A — Does QoreChain expose staking queries to CosmWasm contracts?
+### Gate G0-A Ã¢â‚¬â€ Does QoreChain expose staking queries to CosmWasm contracts?
 
 Build a minimal `staking-probe` Native contract. It should accept a provider address, attempt the standard `StakingQuery::AllDelegations` / `query_all_delegations` path, aggregate the returned `uqor` delegations using checked integer arithmetic, and persist the result for inspection.
 
@@ -175,7 +175,7 @@ Test at least:
 
 If G0-A fails, do not use an off-chain API result as if it were a trustless on-chain staking check. Stop and reconsider the product's Cross-VM justification.
 
-### Gate G0-B — Can a bridge-invoked Native contract execute required Native module messages?
+### Gate G0-B Ã¢â‚¬â€ Can a bridge-invoked Native contract execute required Native module messages?
 
 Test whether a Native contract invoked by the EVM precompile can safely execute the specific Cosmos SDK message effects the design needs, including `BankMsg::Send` for an application-level bond release/penalty.
 
@@ -188,13 +188,13 @@ Test:
 
 Do not assume that a normal Native transaction test proves these cross-VM execution semantics.
 
-### Gate G0-C — Cross-VM sender identity and authorization
+### Gate G0-C Ã¢â‚¬â€ Cross-VM sender identity and authorization
 
 Prove that the Native contract sees the expected caller identity for a Solidity escrow contract. QoreChain documents the EVM caller/contract as the Native sender through its `qor1...` address mapping. Verify the mapping for the deployed escrow contract and whitelist only that identity for reservation/finalization calls.
 
 Also verify the account's EVM authorization window and the `0x0901` scope required for the actual transaction path. Do not guess which addresses must be included in `allowed_targets`; inspect the live window rules and run a real test.
 
-### Gate G0-D — Cross-VM atomicity
+### Gate G0-D Ã¢â‚¬â€ Cross-VM atomicity
 
 Use a minimal Solidity caller and a Native test contract. Demonstrate all of these on Diana testnet or a technically equivalent local QoreChain environment, then repeat on testnet before claiming completion:
 
@@ -208,7 +208,7 @@ Use a minimal Solidity caller and a Native test contract. Demonstrate all of the
 
 The precompile can return empty data when it is not active. A Solidity low-level call returning `ok == true` is therefore not sufficient. Check the response and decode a documented response format.
 
-### Gate G0-E — Governance feasibility
+### Gate G0-E Ã¢â‚¬â€ Governance feasibility
 
 Confirm that the team can get its custom Native contract stored, instantiated, and added to the Cross-VM allowlist in time. Custom Native code upload and bridge allowlisting are governance-controlled on Diana testnet.
 
@@ -249,52 +249,52 @@ Decision / next step:
 
 ```text
                        OFF-CHAIN LAYER
-  ┌──────────────────────────────────────────────────────────────┐
-  │                                                              │
-  │  Buyer agent       Provider adapter          Monitor nodes   │
-  │  - discover        - query Native slot       - run probes    │
-  │  - rank offers     - verify reservation      - measure SLA   │
-  │  - prepare request- execute API workload     - sign reports  │
-  │                                                              │
-  └──────────────┬─────────────────┬────────────────────┬────────┘
-                 │                 │                    │
-                 │                 │                    │
-          ┌──────▼──────┐   ┌──────▼──────────┐  ┌──────▼─────────┐
-          │ Next.js UI  │   │ Native queries  │  │ EVM evidence   │
-          │ / client    │   │ / Native txs     │  │ submission     │
-          └──────┬──────┘   └──────┬──────────┘  └──────┬─────────┘
-                 │                 │                    │
-  ═══════════════╪═════════════════╪════════════════════╪════════════
-                 │                 │                    │
-                 │          QORECHAIN DIANA TESTNET      │
-                 │                                      │
-          ┌──────▼──────────────────────────────────────▼──────┐
-          │                     EVM                             │
-          │                                                     │
-          │  QoreLeaseEscrow.sol                                │
-          │  - buyer fUSD escrow                                │
-          │  - offer / reservation references                   │
-          │  - report verification                              │
-          │  - payout / refund / settlement                     │
-          │                                                     │
-          └────────────────────────┬────────────────────────────┘
-                                   │
-                    synchronous EVM → Native bridge
+  Ã¢â€Å’Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€Â
+  Ã¢â€â€š                                                              Ã¢â€â€š
+  Ã¢â€â€š  Buyer agent       Provider adapter          Monitor nodes   Ã¢â€â€š
+  Ã¢â€â€š  - discover        - query Native slot       - run probes    Ã¢â€â€š
+  Ã¢â€â€š  - rank offers     - verify reservation      - measure SLA   Ã¢â€â€š
+  Ã¢â€â€š  - prepare request- execute API workload     - sign reports  Ã¢â€â€š
+  Ã¢â€â€š                                                              Ã¢â€â€š
+  Ã¢â€â€Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€Â¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€Â¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€Â¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€Ëœ
+                 Ã¢â€â€š                 Ã¢â€â€š                    Ã¢â€â€š
+                 Ã¢â€â€š                 Ã¢â€â€š                    Ã¢â€â€š
+          Ã¢â€Å’Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€“Â¼Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€Â   Ã¢â€Å’Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€“Â¼Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€Â  Ã¢â€Å’Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€“Â¼Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€Â
+          Ã¢â€â€š Next.js UI  Ã¢â€â€š   Ã¢â€â€š Native queries  Ã¢â€â€š  Ã¢â€â€š EVM evidence   Ã¢â€â€š
+          Ã¢â€â€š / client    Ã¢â€â€š   Ã¢â€â€š / Native txs     Ã¢â€â€š  Ã¢â€â€š submission     Ã¢â€â€š
+          Ã¢â€â€Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€Â¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€Ëœ   Ã¢â€â€Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€Â¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€Ëœ  Ã¢â€â€Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€Â¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€Ëœ
+                 Ã¢â€â€š                 Ã¢â€â€š                    Ã¢â€â€š
+  Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂªÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂªÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂªÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â
+                 Ã¢â€â€š                 Ã¢â€â€š                    Ã¢â€â€š
+                 Ã¢â€â€š          QORECHAIN DIANA TESTNET      Ã¢â€â€š
+                 Ã¢â€â€š                                      Ã¢â€â€š
+          Ã¢â€Å’Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€“Â¼Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€“Â¼Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€Â
+          Ã¢â€â€š                     EVM                             Ã¢â€â€š
+          Ã¢â€â€š                                                     Ã¢â€â€š
+          Ã¢â€â€š  QoreLeaseEscrow.sol                                Ã¢â€â€š
+          Ã¢â€â€š  - buyer fUSD escrow                                Ã¢â€â€š
+          Ã¢â€â€š  - offer / reservation references                   Ã¢â€â€š
+          Ã¢â€â€š  - report verification                              Ã¢â€â€š
+          Ã¢â€â€š  - payout / refund / settlement                     Ã¢â€â€š
+          Ã¢â€â€š                                                     Ã¢â€â€š
+          Ã¢â€â€Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€Â¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€Ëœ
+                                   Ã¢â€â€š
+                    synchronous EVM Ã¢â€ â€™ Native bridge
                             precompile 0x0901
-                                   │
-          ┌────────────────────────▼────────────────────────────┐
-          │              QORECHAIN NATIVE                       │
-          │                                                     │
-          │  QoreLeaseRegistry.rs                               │
-          │  - provider registry                                │
-          │  - eligibility gate (only after G0-A passes)        │
-          │  - liquid application-level bond                    │
-          │  - slot capacity                                   │
-          │  - reservation state machine                        │
-          │  - replay / duplicate protection                    │
-          │  - completion / release                             │
-          │                                                     │
-          └─────────────────────────────────────────────────────┘
+                                   Ã¢â€â€š
+          Ã¢â€Å’Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€“Â¼Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€Â
+          Ã¢â€â€š              QORECHAIN NATIVE                       Ã¢â€â€š
+          Ã¢â€â€š                                                     Ã¢â€â€š
+          Ã¢â€â€š  QoreLeaseRegistry.rs                               Ã¢â€â€š
+          Ã¢â€â€š  - provider registry                                Ã¢â€â€š
+          Ã¢â€â€š  - eligibility gate (only after G0-A passes)        Ã¢â€â€š
+          Ã¢â€â€š  - liquid application-level bond                    Ã¢â€â€š
+          Ã¢â€â€š  - slot capacity                                   Ã¢â€â€š
+          Ã¢â€â€š  - reservation state machine                        Ã¢â€â€š
+          Ã¢â€â€š  - replay / duplicate protection                    Ã¢â€â€š
+          Ã¢â€â€š  - completion / release                             Ã¢â€â€š
+          Ã¢â€â€š                                                     Ã¢â€â€š
+          Ã¢â€â€Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€Ëœ
 ```
 
 ### Data authority
@@ -359,7 +359,7 @@ This still does not stop a provider from selling the same capacity outside QoreL
 
 These are proposed interfaces. The implementation agent must produce an interface specification and tests before finalizing signatures, argument layouts, or storage schemas.
 
-### 7.1 Native contract — `QoreLeaseRegistry`
+### 7.1 Native contract Ã¢â‚¬â€ `QoreLeaseRegistry`
 
 Proposed execute operations:
 
@@ -387,7 +387,7 @@ Proposed query operations:
 | `eligibility` | Read eligibility details and last verified staking inputs, if G0-A passes |
 | `authorized_escrows` | Read authorized EVM escrow identities |
 
-### 7.2 EVM contract — `QoreLeaseEscrow`
+### 7.2 EVM contract Ã¢â‚¬â€ `QoreLeaseEscrow`
 
 Proposed public operations:
 
@@ -452,15 +452,15 @@ Provider-originated operations must verify `info.sender` equals the provider's r
 
 ```text
 UNREGISTERED
-    │ register + admission checks
-    ▼
-ACTIVE ───────────────► PAUSED
-  │                       │
-  │ valid capacity        │ admin / provider action
-  ▼                       │
-ACTIVE ◄──────────────────┘
-  │
-  └──► EXITING ── no active reservations + no locked bond ──► CLOSED
+    Ã¢â€â€š register + admission checks
+    Ã¢â€“Â¼
+ACTIVE Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€“Âº PAUSED
+  Ã¢â€â€š                       Ã¢â€â€š
+  Ã¢â€â€š valid capacity        Ã¢â€â€š admin / provider action
+  Ã¢â€“Â¼                       Ã¢â€â€š
+ACTIVE Ã¢â€”â€žÃ¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€Ëœ
+  Ã¢â€â€š
+  Ã¢â€â€Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€“Âº EXITING Ã¢â€â‚¬Ã¢â€â‚¬ no active reservations + no locked bond Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€“Âº CLOSED
 ```
 
 The final state names and transitions must be implemented explicitly. A provider must not close while it has active reservations or locked collateral.
@@ -491,19 +491,19 @@ A slot must include at least:
 
 ```text
 RESERVED
-   │ provider begins work (off-chain; optional on-chain marker)
-   ▼
+   Ã¢â€â€š provider begins work (off-chain; optional on-chain marker)
+   Ã¢â€“Â¼
 RUNNING
-   │ delivery report / completion
-   ▼
-PENDING_SETTLEMENT ───────► DISPUTED (only if dispute mechanism is in MVP)
-   │ accepted evidence
-   ▼
+   Ã¢â€â€š delivery report / completion
+   Ã¢â€“Â¼
+PENDING_SETTLEMENT Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€“Âº DISPUTED (only if dispute mechanism is in MVP)
+   Ã¢â€â€š accepted evidence
+   Ã¢â€“Â¼
 CONSUMED / SETTLED
 
 RESERVED or RUNNING
-   │ expiry / cancellation / deterministic failure
-   ▼
+   Ã¢â€â€š expiry / cancellation / deterministic failure
+   Ã¢â€“Â¼
 RELEASED / REFUNDED / PENALIZED (according to terms)
 ```
 
@@ -632,50 +632,50 @@ The coding agent may adjust this after documenting the reason in an ADR, but sho
 
 ```text
 qorelease/
-├── README.md
-├── docs/
-│   ├── SOURCE_REFERENCE.md
-│   ├── FEASIBILITY_SPIKES.md
-│   ├── ARCHITECTURE.md
-│   ├── INTERFACES.md
-│   ├── STATE_MACHINES.md
-│   ├── THREAT_MODEL.md
-│   ├── TEST_PLAN.md
-│   ├── DEPLOYMENT_RUNBOOK.md
-│   ├── DEMO_RUNBOOK.md
-│   ├── decisions/
-│   │   ├── ADR-0001-runtime-boundary.md
-│   │   ├── ADR-0002-staking-admission.md
-│   │   ├── ADR-0003-bond-accounting.md
-│   │   └── ADR-0004-monitor-quorum.md
-│   └── evidence/
-│       ├── testnet-addresses.md
-│       ├── governance-proposals.md
-│       └── transaction-evidence.md
-├── contracts/
-│   ├── native-registry/
-│   │   ├── Cargo.toml
-│   │   ├── src/
-│   │   ├── tests/
-│   │   └── schema/
-│   └── evm-escrow/
-│       ├── foundry.toml
-│       ├── src/
-│       ├── test/
-│       └── script/
-├── apps/
-│   └── web/                  # Next.js UI; do not build before G0 passes
-├── services/
-│   ├── provider-adapter/     # Native-aware provider scheduler
-│   └── monitor/              # Independent signed SLA probes
-├── packages/
-│   ├── protocol-types/       # Shared IDs, hashes, metrics and schemas
-│   └── qorechain-client/     # Thin, tested QoreChain helpers
-├── scripts/
-│   ├── check-network.ts
-│   ├── check-bridge.ts
-│   └── verify-deployment.ts
-└── .env.example
+Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ README.md
+Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ docs/
+Ã¢â€â€š   Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ SOURCE_REFERENCE.md
+Ã¢â€â€š   Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ FEASIBILITY_SPIKES.md
+Ã¢â€â€š   Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ ARCHITECTURE.md
+Ã¢â€â€š   Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ INTERFACES.md
+Ã¢â€â€š   Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ STATE_MACHINES.md
+Ã¢â€â€š   Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ THREAT_MODEL.md
+Ã¢â€â€š   Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ TEST_PLAN.md
+Ã¢â€â€š   Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ DEPLOYMENT_RUNBOOK.md
+Ã¢â€â€š   Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ DEMO_RUNBOOK.md
+Ã¢â€â€š   Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ decisions/
+Ã¢â€â€š   Ã¢â€â€š   Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ ADR-0001-runtime-boundary.md
+Ã¢â€â€š   Ã¢â€â€š   Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ ADR-0002-staking-admission.md
+Ã¢â€â€š   Ã¢â€â€š   Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ ADR-0003-bond-accounting.md
+Ã¢â€â€š   Ã¢â€â€š   Ã¢â€â€Ã¢â€â‚¬Ã¢â€â‚¬ ADR-0004-monitor-quorum.md
+Ã¢â€â€š   Ã¢â€â€Ã¢â€â‚¬Ã¢â€â‚¬ evidence/
+Ã¢â€â€š       Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ testnet-addresses.md
+Ã¢â€â€š       Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ governance-proposals.md
+Ã¢â€â€š       Ã¢â€â€Ã¢â€â‚¬Ã¢â€â‚¬ transaction-evidence.md
+Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ contracts/
+Ã¢â€â€š   Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ native-registry/
+Ã¢â€â€š   Ã¢â€â€š   Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ Cargo.toml
+Ã¢â€â€š   Ã¢â€â€š   Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ src/
+Ã¢â€â€š   Ã¢â€â€š   Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ tests/
+Ã¢â€â€š   Ã¢â€â€š   Ã¢â€â€Ã¢â€â‚¬Ã¢â€â‚¬ schema/
+Ã¢â€â€š   Ã¢â€â€Ã¢â€â‚¬Ã¢â€â‚¬ evm-escrow/
+Ã¢â€â€š       Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ foundry.toml
+Ã¢â€â€š       Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ src/
+Ã¢â€â€š       Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ test/
+Ã¢â€â€š       Ã¢â€â€Ã¢â€â‚¬Ã¢â€â‚¬ script/
+Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ apps/
+Ã¢â€â€š   Ã¢â€â€Ã¢â€â‚¬Ã¢â€â‚¬ web/                  # Next.js UI; do not build before G0 passes
+Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ services/
+Ã¢â€â€š   Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ provider-adapter/     # Native-aware provider scheduler
+Ã¢â€â€š   Ã¢â€â€Ã¢â€â‚¬Ã¢â€â‚¬ monitor/              # Independent signed SLA probes
+Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ packages/
+Ã¢â€â€š   Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ protocol-types/       # Shared IDs, hashes, metrics and schemas
+Ã¢â€â€š   Ã¢â€â€Ã¢â€â‚¬Ã¢â€â‚¬ qorechain-client/     # Thin, tested QoreChain helpers
+Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ scripts/
+Ã¢â€â€š   Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ check-network.ts
+Ã¢â€â€š   Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ check-bridge.ts
+Ã¢â€â€š   Ã¢â€â€Ã¢â€â‚¬Ã¢â€â‚¬ verify-deployment.ts
+Ã¢â€â€Ã¢â€â‚¬Ã¢â€â‚¬ .env.example
 ```
 
 ### Stack direction
@@ -721,7 +721,7 @@ These files are not optional paperwork. They prevent the implementation agent fr
 
 ## 14. Implementation milestones
 
-### Phase 0 — Feasibility / no product UI
+### Phase 0 Ã¢â‚¬â€ Feasibility / no product UI
 
 - Read official QoreChain Native, Cross-VM, EVM precompile, EVM window, governance, and gas-limit documentation.
 - Build the staking-probe contract.
@@ -734,7 +734,7 @@ These files are not optional paperwork. They prevent the implementation agent fr
 
 **Exit criterion:** all critical gates pass and the Native-specific value proposition remains valid.
 
-### Phase 1 — Protocol specification
+### Phase 1 Ã¢â‚¬â€ Protocol specification
 
 - Freeze provider, slot, reservation, bond, escrow, and evidence state machines.
 - Define integer units and time representation.
@@ -745,7 +745,7 @@ These files are not optional paperwork. They prevent the implementation agent fr
 
 **Exit criterion:** no ambiguous field meaning or untested runtime assumption remains in the interface contract.
 
-### Phase 2 — Native registry
+### Phase 2 Ã¢â‚¬â€ Native registry
 
 - Implement provider registration and status.
 - Implement the validated admission rule.
@@ -757,7 +757,7 @@ These files are not optional paperwork. They prevent the implementation agent fr
 
 **Exit criterion:** Native contract tests prove all provider-side invariants.
 
-### Phase 3 — EVM escrow
+### Phase 3 Ã¢â‚¬â€ EVM escrow
 
 - Implement buyer request and offer acceptance.
 - Implement fUSD escrow with exact amount accounting.
@@ -768,7 +768,7 @@ These files are not optional paperwork. They prevent the implementation agent fr
 
 **Exit criterion:** local EVM tests prove escrow conservation and mocked bridge failure paths; Diana tests prove real bridge behaviour.
 
-### Phase 4 — Testnet integration and governance
+### Phase 4 Ã¢â‚¬â€ Testnet integration and governance
 
 - Build reproducible Native Wasm artifact and checksum.
 - Submit / coordinate governance upload, instantiation, and bridge allowlist proposal(s).
@@ -780,7 +780,7 @@ These files are not optional paperwork. They prevent the implementation agent fr
 
 **Exit criterion:** reproducible cross-VM state changes with explorer evidence and rollback proof.
 
-### Phase 5 — Provider adapter and monitor
+### Phase 5 Ã¢â‚¬â€ Provider adapter and monitor
 
 - Implement Native reservation polling / queries.
 - Prevent provider execution without a valid active reservation.
@@ -790,7 +790,7 @@ These files are not optional paperwork. They prevent the implementation agent fr
 
 **Exit criterion:** service execution and settlement metrics are reproducible and not generated solely by the provider.
 
-### Phase 6 — Minimal UI and demo hardening
+### Phase 6 Ã¢â‚¬â€ Minimal UI and demo hardening
 
 - Provider view: register status, bond, published slots, reservations.
 - Buyer view: request, offer, reserve, escrow, evidence and settlement.
@@ -926,7 +926,7 @@ The project is ready for judging only when:
 - Independent monitor evidence is verified on-chain.
 - Settlement updates EVM escrow and Native reservation / bond state consistently.
 - A forced rollback proves both runtimes revert together.
-- The threat model, known limitations, and all documentation listed in §13 are current.
+- The threat model, known limitations, and all documentation listed in Ã‚Â§13 are current.
 - Deployment evidence contains real addresses, code IDs, checksums, proposal IDs, transaction hashes, and block heights.
 
 ## 18. Non-negotiable product honesty
@@ -953,3 +953,8 @@ The first coding session should do only the following:
 7. Report Pass / Fail / Unknown for G0-A through G0-E.
 
 Do not start the full QoreLease registry, EVM escrow, agent marketplace, or frontend until the feasibility report supports proceeding.
+
+
+## Phase 0 status — 24 November 2026
+
+The probe source inputs are public at commit [724729bcfc34bb43131165bbbe49f90dace5926e](https://github.com/hari-ramsss/chronolease/commit/724729bcfc34bb43131165bbbe49f90dace5926e). The pinned optimizer output is reproducible and passes the independent Wasm limits audit. RustSec found two transitive cryptographic vulnerabilities. Proposal A has not been submitted and is **NOT READY FOR SUBMISSION** pending dependency-security review. G0-A has not been tested on Diana or passed. See `docs/SOURCE_PROVENANCE_G0A.md`, `docs/WASM_ARTIFACT_AUDIT.md`, and `artifacts/proposals/PROPOSAL_A_REVIEW.md`.

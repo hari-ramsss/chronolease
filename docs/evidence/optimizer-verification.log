@@ -1,0 +1,42 @@
+CosmWasm optimizer verification — 2026-11-24
+
+Environment
+  WSL distribution: Ubuntu 24.04.3 LTS, WSL 2
+  Linux architecture: x86_64
+  Docker Desktop: 4.44.0
+  Docker client/server: 28.3.2 / 28.3.2
+  Docker client/server platform: linux/amd64
+
+Optimizer image
+  Requested tag: cosmwasm/optimizer:0.16.1
+  Pulled with: docker pull --platform=linux/amd64 cosmwasm/optimizer:0.16.1
+  Resolved image: cosmwasm/optimizer@sha256:b9c92b2900b7ebaab3499203615c1b8589592bc557355ed3432e48851ffde69e
+  Inspected platform: linux/amd64
+  Image Rust: 1.81.0-x86_64-unknown-linux-musl
+  Image Cargo: 1.81.0 (2dbb1af80 2024-08-20)
+  Image wasm-opt: version 116
+  Contract cosmwasm-std: 1.5.11
+
+Builds
+  Both builds used the same full Docker command and immutable image digest
+  recorded in docs/DEPLOYMENT_RUNBOOK.md.
+  Build 1 optimizer checksum:
+    4b0125a5b04a93295ebf6f8f15b4cf866a5c45506425d3eee3251245c6df0509  qorelease_staking_probe.wasm
+  Build 2 optimizer checksum:
+    4b0125a5b04a93295ebf6f8f15b4cf866a5c45506425d3eee3251245c6df0509  qorelease_staking_probe.wasm
+  Wasm byte size: 169218
+  Reproducibility comparison: MATCH
+
+SHA-256 checks (sha256sum -c)
+  In contracts/staking-probe/artifacts:
+    qorelease_staking_probe.wasm: OK
+  In artifacts/contracts:
+    qorelease_staking_probe.wasm: OK
+    qorelease_staking_probe.cargo-diagnostic.wasm: OK
+
+The initial attempt against the original lock failed because base64ct 1.8.3
+requires Edition 2024 support. After pinning base64ct 1.7.3, the next attempt
+identified the same compatibility issue in zeroize 1.9.2. Both are pinned in
+the resulting Cargo.lock to 1.7.3 and 1.8.1, respectively. The original lock
+is preserved at Cargo.lock.before-optimizer. Failure and successful console
+logs are preserved alongside this file.

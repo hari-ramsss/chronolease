@@ -1,0 +1,21 @@
+Purpose: second reproducibility build from local source commit 724729bcfc34bb43131165bbbe49f90dace5926e
+Source SHA-256: 65a609605d04562892084c9f3f7f74d557f0b27fb7922285d58af9ab32aaee24
+Cargo.toml SHA-256: 58c8d97616345e4e5e8dfdb134438c6739d2db8710ff91a4142e9b8c4684f542
+Cargo.lock SHA-256: 7ad75e85907241d8f58a68d18cdb2c28ef06f73600c4f9968f6185e365e084ce
+Platform: linux/amd64
+Image: cosmwasm/optimizer@sha256:b9c92b2900b7ebaab3499203615c1b8589592bc557355ed3432e48851ffde69e
+
+Command, from the crate directory:
+wsl -d Ubuntu --cd "/mnt/c/Users/Hari Ram/Documents/chronoquota/contracts/staking-probe" -- docker run --rm --platform linux/amd64 -v "/mnt/c/Users/Hari Ram/Documents/chronoquota/contracts/staking-probe:/code" --mount type=volume,source=staking-probe_cache,target=/target --mount type=volume,source=registry_cache,target=/usr/local/cargo/registry cosmwasm/optimizer@sha256:b9c92b2900b7ebaab3499203615c1b8589592bc557355ed3432e48851ffde69e
+
+Observed output:
+1.81.0-x86_64-unknown-linux-musl (default)
+cargo 1.81.0 (2dbb1af80 2024-08-20)
+Building project /code ...
+Building qorelease_staking_probe with features {}
+Finished release profile
+Optimizing qorelease_staking_probe.wasm ...
+4b0125a5b04a93295ebf6f8f15b4cf866a5c45506425d3eee3251245c6df0509  qorelease_staking_probe.wasm
+Done.
+
+Result: both runs match the optimizer-generated checksum and the committed source inputs.

@@ -7,7 +7,8 @@ This file is the source index for the implementation agent. It is intentionally 
 **Reference hierarchy:** Current QoreChain documentation and live network parameters take precedence over this file. QoreChain source code / released binaries take precedence over older tutorials. General CosmWasm documentation explains standard APIs but does not prove QoreChain enables them.
 
 ---
-
+## main source (use this source for building it has all the kits required for the startup)
+https://build.qorechain.io/kits
 ## 1. Read these first — essential QoreChain documentation
 
 ### 1.1 Cross-VM Interoperability
@@ -97,6 +98,28 @@ Important:
 - Prefer a no-admin deployment where appropriate; record and verify the actual code pin.
 - `MsgUpdateParams` for Cross-VM can replace the whole parameter set. Preserve every current field and modify only the intended target / pin entries.
 
+### 1.5.1 Optimizer image and WSL2 environment
+
+Official optimizer source: https://github.com/CosmWasm/optimizer
+
+The approved project build procedure pins `cosmwasm/optimizer:0.16.1`. The
+official optimizer documentation identifies `cosmwasm/optimizer` as the
+x86_64/default image and warns ARM images produce different Wasm bytes. On
+24 November 2026 the tag was pulled for `linux/amd64` and resolved to immutable
+image `cosmwasm/optimizer@sha256:b9c92b2900b7ebaab3499203615c1b8589592bc557355ed3432e48851ffde69e`.
+The image reported Rust/Cargo 1.81.0 and `wasm-opt` 116. Two builds of the
+standalone `contracts/staking-probe` crate produced identical Wasm SHA-256
+`4b0125a5b04a93295ebf6f8f15b4cf866a5c45506425d3eee3251245c6df0509`.
+
+The existing lockfile was adjusted only at dependency-resolution level to pin
+`base64ct 1.7.3` and `zeroize 1.8.1`, versions parseable by optimizer Cargo
+1.81; the earlier lockfile is retained under `docs/evidence/`. Keep the resulting
+`contracts/staking-probe/Cargo.lock` with the source. Build command, artifact
+size, checksums, and full logs are recorded in `docs/DEPLOYMENT_RUNBOOK.md` and
+`docs/FEASIBILITY_SPIKES.md`. The official optimizer README explains the x86_64
+image choice and notes that ARM builds differ:
+https://github.com/CosmWasm/optimizer#notice. No proposal was prepared.
+
 ### 1.6 CosmWasm Gas, Pricing and Upload Limits
 
 URL: https://docs.qorechain.io/developer-guide/cosmwasm-gas-and-limits/
@@ -143,6 +166,16 @@ The workshop intentionally demonstrates a simple EVM counter plus Native receipt
 ---
 
 ## 2. Staking-query research — critical feasibility question
+
+### 2.0 QoreChain runtime source wiring (supporting evidence only)
+
+Source: https://github.com/qorechain/qorechain-core/blob/main/app/app.go
+
+The current `main` source passes `app.StakingKeeper` into
+`wasmkeeper.NewKeeper`. This establishes keeper wiring at that source revision,
+but does not itself prove the deployed Diana v3.2.9 query router exposes
+`StakingQuery::AllDelegations`. The inspected branch was not tied to the
+deployed binary; G0-A remains a required on-chain probe.
 
 ### 2.1 CosmWasm standard-library definition
 
@@ -405,3 +438,21 @@ When a question is not answered by this file:
 7. Update this source index with the exact source URL, version / date, and the conclusion.
 
 Never invent an API, precompile, contract address, ABI, message type, query route, or governance result. If a capability remains unknown, label it `NOT VERIFIED` and stop work that depends on it.
+
+## Phase 0 artifact and proposal review
+
+The official optimizer build, its reproducibility evidence, and current local
+milestone state are recorded in `docs/FEASIBILITY_SPIKES.md` and
+`docs/DEPLOYMENT_RUNBOOK.md`. The unsigned upload-only Proposal A bundle is in
+`artifacts/proposals/`; it is prepared for review only and has not been submitted.
+The probe source inputs are public at commit
+[`724729bcfc34bb43131165bbbe49f90dace5926e`](https://github.com/hari-ramsss/chronolease/commit/724729bcfc34bb43131165bbbe49f90dace5926e).
+QoreChain's current proposal
+message sequence and limits are documented at the [governance proposal guide](https://docs.qorechain.io/developer-guide/governance-proposals-contracts/)
+and [CosmWasm gas and upload limits](https://docs.qorechain.io/developer-guide/cosmwasm-gas-and-limits/).
+
+## G0-A source provenance and security audit (24 November 2026)
+
+The probe build inputs are captured in public commit [724729bcfc34bb43131165bbbe49f90dace5926e](https://github.com/hari-ramsss/chronolease/commit/724729bcfc34bb43131165bbbe49f90dace5926e). The Proposal A review remains **NOT READY FOR SUBMISSION** because of the dependency findings. See `docs/SOURCE_PROVENANCE_G0A.md`.
+
+The actual optimized Wasm passed the independent parser/wasm-opt limits audit; measured values and exact commands are in `docs/WASM_ARTIFACT_AUDIT.md`. `cargo audit` found vulnerabilities in transitive `crypto-bigint 0.5.5` (RUSTSEC-2026-0387) and `curve25519-dalek 3.2.0` (RUSTSEC-2024-0344), and marked `derivative 2.2.0` unmaintained (RUSTSEC-2024-0388). No dependency changes were made; full output and the compatibility lock diff are retained in `docs/evidence/` and summarized in `artifacts/proposals/DEPENDENCY_AUDIT.md`.

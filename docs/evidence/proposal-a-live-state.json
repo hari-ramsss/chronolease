@@ -1,0 +1,346 @@
+﻿{
+    "https://api-testnet.qore.host/cosmos/auth/v1beta1/module_accounts/gov":  {
+                                                                                  "account":  {
+                                                                                                  "@type":  "/cosmos.auth.v1beta1.ModuleAccount",
+                                                                                                  "base_account":  {
+                                                                                                                       "address":  "qor10d07y265gmmuvt4z0w9aw880jnsr700jwfyxr3",
+                                                                                                                       "pub_key":  null,
+                                                                                                                       "account_number":  "9",
+                                                                                                                       "sequence":  "0"
+                                                                                                                   },
+                                                                                                  "name":  "gov",
+                                                                                                  "permissions":  [
+                                                                                                                      "burner"
+                                                                                                                  ]
+                                                                                              }
+                                                                              },
+    "https://api-testnet.qore.host/cosmwasm/wasm/v1/codes/params":  {
+                                                                        "params":  {
+                                                                                       "code_upload_access":  {
+                                                                                                                  "permission":  "Nobody",
+                                                                                                                  "addresses":  [
+
+                                                                                                                                ]
+                                                                                                              },
+                                                                                       "instantiate_default_permission":  "Everybody"
+                                                                                   }
+                                                                    },
+    "https://api-testnet.qore.host/cosmos/circuit/v1/disable_list":  {
+                                                                         "disabled_list":  [
+                                                                                               "/cosmwasm.wasm.v1.MsgStoreCode"
+                                                                                           ]
+                                                                     },
+    "https://api-testnet.qore.host/qorechain/crossvm/v1/params":  {
+                                                                      "max_message_size":  "65536",
+                                                                      "max_queue_size":  1000,
+                                                                      "queue_timeout_blocks":  "100",
+                                                                      "enabled":  true,
+                                                                      "bridge_allowed_targets":  [
+                                                                                                     "cosmwasm:qor14hj2tavq8fpesdwxxcu44rty3hh90vhujrvcmstl4zr3txmfvw9s93uuqt",
+                                                                                                     "cosmwasm:qor1ufs3tlq4umljk0qfe8k5ya0x6hpavn897u2cnf9k0en9jr7qarqqmjalsd",
+                                                                                                     "cosmwasm:qor1nc5tatafv6eyq7llkr2gv50ff9e22mnf70qgjlv737ktmt4eswrqfye7zd",
+                                                                                                     "cosmwasm:qor1xjayq5ev55tkzpml9klxwyshr7gdrha0nurha9jhm0f0gdckksgs3gltw8",
+                                                                                                     "svm:11111111111111111111111111111111"
+                                                                                                 ],
+                                                                      "bridge_target_pins":  [
+                                                                                                 {
+                                                                                                     "target":  "cosmwasm:qor14hj2tavq8fpesdwxxcu44rty3hh90vhujrvcmstl4zr3txmfvw9s93uuqt",
+                                                                                                     "code_id":  "1",
+                                                                                                     "history_len":  "1",
+                                                                                                     "svm_code_hash":  null,
+                                                                                                     "svm_deploy_slot":  "0"
+                                                                                                 },
+                                                                                                 {
+                                                                                                     "target":  "cosmwasm:qor1ufs3tlq4umljk0qfe8k5ya0x6hpavn897u2cnf9k0en9jr7qarqqmjalsd",
+                                                                                                     "code_id":  "5",
+                                                                                                     "history_len":  "1",
+                                                                                                     "svm_code_hash":  null,
+                                                                                                     "svm_deploy_slot":  "0"
+                                                                                                 },
+                                                                                                 {
+                                                                                                     "target":  "cosmwasm:qor1nc5tatafv6eyq7llkr2gv50ff9e22mnf70qgjlv737ktmt4eswrqfye7zd",
+                                                                                                     "code_id":  "6",
+                                                                                                     "history_len":  "2",
+                                                                                                     "svm_code_hash":  null,
+                                                                                                     "svm_deploy_slot":  "0"
+                                                                                                 },
+                                                                                                 {
+                                                                                                     "target":  "cosmwasm:qor1xjayq5ev55tkzpml9klxwyshr7gdrha0nurha9jhm0f0gdckksgs3gltw8",
+                                                                                                     "code_id":  "865",
+                                                                                                     "history_len":  "1",
+                                                                                                     "svm_code_hash":  null,
+                                                                                                     "svm_deploy_slot":  "0"
+                                                                                                 }
+                                                                                             ],
+                                                                      "max_pending_per_sender":  100,
+                                                                      "max_cosmos_tx_gas":  "50000000",
+                                                                      "record_retention_blocks":  "100000",
+                                                                      "max_block_wasm_gas":  "3000000",
+                                                                      "max_tx_wasm_share_bps":  5000,
+                                                                      "max_block_level_wasm_gas":  "10000000",
+                                                                      "queue_wasm_reserve_bps":  2500,
+                                                                      "wasm_congestion_max_factor":  20,
+                                                                      "wasm_congestion_target_bps":  5000,
+                                                                      "wasm_congestion_factor_micro":  "1000000",
+                                                                      "max_block_upload_bps":  5000,
+                                                                      "max_queue_timeouts_per_block":  100,
+                                                                      "bridge_svm_strict_cpi":  [
+
+                                                                                                ],
+                                                                      "bridge_svm_strict_delisted":  [
+
+                                                                                                     ]
+                                                                  },
+    "https://api-testnet.qore.host/cosmwasm/wasm/v1/code?pagination.reverse=true\u0026pagination.limit=1":  {
+                                                                                                                "code_infos":  [
+                                                                                                                                   {
+                                                                                                                                       "code_id":  "865",
+                                                                                                                                       "creator":  "qor10d07y265gmmuvt4z0w9aw880jnsr700jwfyxr3",
+                                                                                                                                       "data_hash":  "6EBFC32FB9A9C8A412FDB071FB2C317B780BA05F637B8A4D274001C95FB5C43C",
+                                                                                                                                       "instantiate_permission":  {
+                                                                                                                                                                      "permission":  "Everybody",
+                                                                                                                                                                      "addresses":  [
+
+                                                                                                                                                                                    ]
+                                                                                                                                                                  }
+                                                                                                                                   }
+                                                                                                                               ],
+                                                                                                                "pagination":  {
+                                                                                                                                   "next_key":  "AAAAAAAAA2A=",
+                                                                                                                                   "total":  "0"
+                                                                                                                               }
+                                                                                                            },
+    "https://api-testnet.qore.host/cosmos/gov/v1/params/deposit":  {
+                                                                       "voting_params":  null,
+                                                                       "deposit_params":  {
+                                                                                              "min_deposit":  [
+                                                                                                                  {
+                                                                                                                      "denom":  "uqor",
+                                                                                                                      "amount":  "10000000"
+                                                                                                                  }
+                                                                                                              ],
+                                                                                              "max_deposit_period":  "172800s"
+                                                                                          },
+                                                                       "tally_params":  null,
+                                                                       "params":  {
+                                                                                      "min_deposit":  [
+                                                                                                          {
+                                                                                                              "denom":  "uqor",
+                                                                                                              "amount":  "10000000"
+                                                                                                          }
+                                                                                                      ],
+                                                                                      "max_deposit_period":  "172800s",
+                                                                                      "voting_period":  "14400s",
+                                                                                      "quorum":  "0.334000000000000000",
+                                                                                      "threshold":  "0.500000000000000000",
+                                                                                      "veto_threshold":  "0.334000000000000000",
+                                                                                      "min_initial_deposit_ratio":  "0.000000000000000000",
+                                                                                      "proposal_cancel_ratio":  "0.500000000000000000",
+                                                                                      "proposal_cancel_dest":  "",
+                                                                                      "expedited_voting_period":  "3600s",
+                                                                                      "expedited_threshold":  "0.667000000000000000",
+                                                                                      "expedited_min_deposit":  [
+                                                                                                                    {
+                                                                                                                        "denom":  "uqor",
+                                                                                                                        "amount":  "50000000"
+                                                                                                                    }
+                                                                                                                ],
+                                                                                      "burn_vote_quorum":  false,
+                                                                                      "burn_proposal_deposit_prevote":  false,
+                                                                                      "burn_vote_veto":  true,
+                                                                                      "min_deposit_ratio":  "0.010000000000000000"
+                                                                                  }
+                                                                   },
+    "https://api-testnet.qore.host/cosmos/gov/v1/params/voting":  {
+                                                                      "voting_params":  {
+                                                                                            "voting_period":  "14400s"
+                                                                                        },
+                                                                      "deposit_params":  null,
+                                                                      "tally_params":  null,
+                                                                      "params":  {
+                                                                                     "min_deposit":  [
+                                                                                                         {
+                                                                                                             "denom":  "uqor",
+                                                                                                             "amount":  "10000000"
+                                                                                                         }
+                                                                                                     ],
+                                                                                     "max_deposit_period":  "172800s",
+                                                                                     "voting_period":  "14400s",
+                                                                                     "quorum":  "0.334000000000000000",
+                                                                                     "threshold":  "0.500000000000000000",
+                                                                                     "veto_threshold":  "0.334000000000000000",
+                                                                                     "min_initial_deposit_ratio":  "0.000000000000000000",
+                                                                                     "proposal_cancel_ratio":  "0.500000000000000000",
+                                                                                     "proposal_cancel_dest":  "",
+                                                                                     "expedited_voting_period":  "3600s",
+                                                                                     "expedited_threshold":  "0.667000000000000000",
+                                                                                     "expedited_min_deposit":  [
+                                                                                                                   {
+                                                                                                                       "denom":  "uqor",
+                                                                                                                       "amount":  "50000000"
+                                                                                                                   }
+                                                                                                               ],
+                                                                                     "burn_vote_quorum":  false,
+                                                                                     "burn_proposal_deposit_prevote":  false,
+                                                                                     "burn_vote_veto":  true,
+                                                                                     "min_deposit_ratio":  "0.010000000000000000"
+                                                                                 }
+                                                                  },
+    "https://api-testnet.qore.host/cosmos/base/tendermint/v1beta1/blocks/latest":  {
+                                                                                       "block_id":  {
+                                                                                                        "hash":  "kRdTbSObnHp2HjdY66XJI3Oyy8UBZnsQqbdzq80mJ0Q=",
+                                                                                                        "part_set_header":  {
+                                                                                                                                "total":  1,
+                                                                                                                                "hash":  "Vh952HiA712Nkn7lB+9pAJHRh4CDxc34dio3Cea8X8s="
+                                                                                                                            }
+                                                                                                    },
+                                                                                       "block":  {
+                                                                                                     "header":  {
+                                                                                                                    "version":  {
+                                                                                                                                    "block":  "11",
+                                                                                                                                    "app":  "0"
+                                                                                                                                },
+                                                                                                                    "chain_id":  "qorechain-diana",
+                                                                                                                    "height":  "10663567",
+                                                                                                                    "time":  "2026-11-24T11:02:15.000147343Z",
+                                                                                                                    "last_block_id":  {
+                                                                                                                                          "hash":  "N7B6e234Q/mT/yK9OlFVAPFJlyGSbOOBzlh0GnejDdE=",
+                                                                                                                                          "part_set_header":  {
+                                                                                                                                                                  "total":  1,
+                                                                                                                                                                  "hash":  "C92fA0NGdzZHnPIw89a5x9+hkykt58jjnBXTKBT/obk="
+                                                                                                                                                              }
+                                                                                                                                      },
+                                                                                                                    "last_commit_hash":  "k9M/N58Kaso8kZjFX9OkU9/xEF1SbTB2Qdru0F2xU70=",
+                                                                                                                    "data_hash":  "ekbX/gs07+T4t9UQHXv4heBFROJ6mG+SbG21kxUcUj0=",
+                                                                                                                    "validators_hash":  "uf4w63/X7DbJXbsVHKDyF8qyE5oPyT9SDR4bqerMGFM=",
+                                                                                                                    "next_validators_hash":  "uf4w63/X7DbJXbsVHKDyF8qyE5oPyT9SDR4bqerMGFM=",
+                                                                                                                    "consensus_hash":  "BICRvH3cKD93v7+R1zxE2ljD34qcvIZ0Bdi389qtoi8=",
+                                                                                                                    "app_hash":  "u3bXULoGK/ygTHm5pCdTnMdbDGEmczV9PqMDQ4ngilU=",
+                                                                                                                    "last_results_hash":  "47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=",
+                                                                                                                    "evidence_hash":  "47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=",
+                                                                                                                    "proposer_address":  "+MUnCIbj9I1ptu0YKIPaK4wAc0Y="
+                                                                                                                },
+                                                                                                     "data":  {
+                                                                                                                  "txs":  [
+                                                                                                                              "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"
+                                                                                                                          ]
+                                                                                                              },
+                                                                                                     "evidence":  {
+                                                                                                                      "evidence":  [
+
+                                                                                                                                   ]
+                                                                                                                  },
+                                                                                                     "last_commit":  {
+                                                                                                                         "height":  "10663566",
+                                                                                                                         "round":  0,
+                                                                                                                         "block_id":  {
+                                                                                                                                          "hash":  "N7B6e234Q/mT/yK9OlFVAPFJlyGSbOOBzlh0GnejDdE=",
+                                                                                                                                          "part_set_header":  {
+                                                                                                                                                                  "total":  1,
+                                                                                                                                                                  "hash":  "C92fA0NGdzZHnPIw89a5x9+hkykt58jjnBXTKBT/obk="
+                                                                                                                                                              }
+                                                                                                                                      },
+                                                                                                                         "signatures":  [
+                                                                                                                                            {
+                                                                                                                                                "block_id_flag":  "BLOCK_ID_FLAG_COMMIT",
+                                                                                                                                                "validator_address":  "+MUnCIbj9I1ptu0YKIPaK4wAc0Y=",
+                                                                                                                                                "timestamp":  "2026-11-24T11:02:14.992988698Z",
+                                                                                                                                                "signature":  "CpjvSE1FeSwkd2/ylvBXxRqDB8a7ojfycaemTRyyr4fuCOvEeWIGpnekKxw8szkD1HzX3fAPiRnthp/CdoWjBQ=="
+                                                                                                                                            },
+                                                                                                                                            {
+                                                                                                                                                "block_id_flag":  "BLOCK_ID_FLAG_COMMIT",
+                                                                                                                                                "validator_address":  "/kyNuSqx6knDuwgoqUQuy4qGTk8=",
+                                                                                                                                                "timestamp":  "2026-11-24T11:02:15.000147343Z",
+                                                                                                                                                "signature":  "8mzYWr+PozQtqoRtIndySfqgxKk7hwYl65YDN+0Skr02APXxN/zj8fDoJHXLeibcyRF+PTqq9PAlqYvCSc5IBQ=="
+                                                                                                                                            },
+                                                                                                                                            {
+                                                                                                                                                "block_id_flag":  "BLOCK_ID_FLAG_COMMIT",
+                                                                                                                                                "validator_address":  "HHE1O8h4Zb4M1QS5ZwOy7X1JJTw=",
+                                                                                                                                                "timestamp":  "2026-11-24T11:02:15.015871471Z",
+                                                                                                                                                "signature":  "lfPyOHm3CJi7buYkFtjzgHVgapbkEckP12Ns/rK/8/XkwuXDzDjc2I+3N6jMMpYMESSp6ozMKI+0DJP/FjENDg=="
+                                                                                                                                            },
+                                                                                                                                            {
+                                                                                                                                                "block_id_flag":  "BLOCK_ID_FLAG_COMMIT",
+                                                                                                                                                "validator_address":  "Va0YTxJaMCqnfqqE9RSwa2YDz7k=",
+                                                                                                                                                "timestamp":  "2026-11-24T11:02:15.048515012Z",
+                                                                                                                                                "signature":  "lyv4OwBGh9/UrQVGXkToxIk0Ejz9ght/vRD0R88DyXmJjeAl1zfVjFMs12oa1A/TiXoJ14dMOO2SRoOC/+MJAQ=="
+                                                                                                                                            }
+                                                                                                                                        ]
+                                                                                                                     }
+                                                                                                 },
+                                                                                       "sdk_block":  {
+                                                                                                         "header":  {
+                                                                                                                        "version":  {
+                                                                                                                                        "block":  "11",
+                                                                                                                                        "app":  "0"
+                                                                                                                                    },
+                                                                                                                        "chain_id":  "qorechain-diana",
+                                                                                                                        "height":  "10663567",
+                                                                                                                        "time":  "2026-11-24T11:02:15.000147343Z",
+                                                                                                                        "last_block_id":  {
+                                                                                                                                              "hash":  "N7B6e234Q/mT/yK9OlFVAPFJlyGSbOOBzlh0GnejDdE=",
+                                                                                                                                              "part_set_header":  {
+                                                                                                                                                                      "total":  1,
+                                                                                                                                                                      "hash":  "C92fA0NGdzZHnPIw89a5x9+hkykt58jjnBXTKBT/obk="
+                                                                                                                                                                  }
+                                                                                                                                          },
+                                                                                                                        "last_commit_hash":  "k9M/N58Kaso8kZjFX9OkU9/xEF1SbTB2Qdru0F2xU70=",
+                                                                                                                        "data_hash":  "ekbX/gs07+T4t9UQHXv4heBFROJ6mG+SbG21kxUcUj0=",
+                                                                                                                        "validators_hash":  "uf4w63/X7DbJXbsVHKDyF8qyE5oPyT9SDR4bqerMGFM=",
+                                                                                                                        "next_validators_hash":  "uf4w63/X7DbJXbsVHKDyF8qyE5oPyT9SDR4bqerMGFM=",
+                                                                                                                        "consensus_hash":  "BICRvH3cKD93v7+R1zxE2ljD34qcvIZ0Bdi389qtoi8=",
+                                                                                                                        "app_hash":  "u3bXULoGK/ygTHm5pCdTnMdbDGEmczV9PqMDQ4ngilU=",
+                                                                                                                        "last_results_hash":  "47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=",
+                                                                                                                        "evidence_hash":  "47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=",
+                                                                                                                        "proposer_address":  "qorvalcons1lrzjwzyxu06g66dka5vz3q769wxqqu6xd52v58"
+                                                                                                                    },
+                                                                                                         "data":  {
+                                                                                                                      "txs":  [
+                                                                                                                                  "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"
+                                                                                                                              ]
+                                                                                                                  },
+                                                                                                         "evidence":  {
+                                                                                                                          "evidence":  [
+
+                                                                                                                                       ]
+                                                                                                                      },
+                                                                                                         "last_commit":  {
+                                                                                                                             "height":  "10663566",
+                                                                                                                             "round":  0,
+                                                                                                                             "block_id":  {
+                                                                                                                                              "hash":  "N7B6e234Q/mT/yK9OlFVAPFJlyGSbOOBzlh0GnejDdE=",
+                                                                                                                                              "part_set_header":  {
+                                                                                                                                                                      "total":  1,
+                                                                                                                                                                      "hash":  "C92fA0NGdzZHnPIw89a5x9+hkykt58jjnBXTKBT/obk="
+                                                                                                                                                                  }
+                                                                                                                                          },
+                                                                                                                             "signatures":  [
+                                                                                                                                                {
+                                                                                                                                                    "block_id_flag":  "BLOCK_ID_FLAG_COMMIT",
+                                                                                                                                                    "validator_address":  "+MUnCIbj9I1ptu0YKIPaK4wAc0Y=",
+                                                                                                                                                    "timestamp":  "2026-11-24T11:02:14.992988698Z",
+                                                                                                                                                    "signature":  "CpjvSE1FeSwkd2/ylvBXxRqDB8a7ojfycaemTRyyr4fuCOvEeWIGpnekKxw8szkD1HzX3fAPiRnthp/CdoWjBQ=="
+                                                                                                                                                },
+                                                                                                                                                {
+                                                                                                                                                    "block_id_flag":  "BLOCK_ID_FLAG_COMMIT",
+                                                                                                                                                    "validator_address":  "/kyNuSqx6knDuwgoqUQuy4qGTk8=",
+                                                                                                                                                    "timestamp":  "2026-11-24T11:02:15.000147343Z",
+                                                                                                                                                    "signature":  "8mzYWr+PozQtqoRtIndySfqgxKk7hwYl65YDN+0Skr02APXxN/zj8fDoJHXLeibcyRF+PTqq9PAlqYvCSc5IBQ=="
+                                                                                                                                                },
+                                                                                                                                                {
+                                                                                                                                                    "block_id_flag":  "BLOCK_ID_FLAG_COMMIT",
+                                                                                                                                                    "validator_address":  "HHE1O8h4Zb4M1QS5ZwOy7X1JJTw=",
+                                                                                                                                                    "timestamp":  "2026-11-24T11:02:15.015871471Z",
+                                                                                                                                                    "signature":  "lfPyOHm3CJi7buYkFtjzgHVgapbkEckP12Ns/rK/8/XkwuXDzDjc2I+3N6jMMpYMESSp6ozMKI+0DJP/FjENDg=="
+                                                                                                                                                },
+                                                                                                                                                {
+                                                                                                                                                    "block_id_flag":  "BLOCK_ID_FLAG_COMMIT",
+                                                                                                                                                    "validator_address":  "Va0YTxJaMCqnfqqE9RSwa2YDz7k=",
+                                                                                                                                                    "timestamp":  "2026-11-24T11:02:15.048515012Z",
+                                                                                                                                                    "signature":  "lyv4OwBGh9/UrQVGXkToxIk0Ejz9ght/vRD0R88DyXmJjeAl1zfVjFMs12oa1A/TiXoJ14dMOO2SRoOC/+MJAQ=="
+                                                                                                                                                }
+                                                                                                                                            ]
+                                                                                                                         }
+                                                                                                     }
+                                                                                   }
+}

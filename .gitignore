@@ -1,3 +1,15 @@
 # Rust build artifacts
 target/
 **/target/
+
+# Optimizer outputs are reproducible and the canonical copies live under artifacts/contracts
+contracts/staking-probe/artifacts/
+docs/evidence/optimizer-build-1/
+
+# PowerShell wrappers duplicate the clean captured optimizer logs
+docs/evidence/*.powershell-raw.log
+
+# Superseded duplicate audit captures (kept locally for reference)
+docs/evidence/cargo-tree-base64ct.log
+docs/evidence/cargo-tree-base64ct-all-features.log
+docs/evidence/wasm-section-metrics.log

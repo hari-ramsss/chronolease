@@ -1,0 +1,97 @@
+1.81.0-x86_64-unknown-linux-musl (default)
+cargo 1.81.0 (2dbb1af80 2024-08-20)
+Building project /code ...
+Building qorelease_staking_probe with features {}
+ Downloading crates ...
+  Downloaded base64 v0.21.7
+  Downloaded group v0.13.0
+  Downloaded sha2 v0.9.9
+  Downloaded serde_derive_internals v0.29.1
+  Downloaded ed25519-zebra v3.1.0
+  Downloaded zeroize v1.8.1
+  Downloaded serde_derive v1.0.229
+  Downloaded serde_core v1.0.229
+  Downloaded typenum v1.20.1
+  Downloaded serde v1.0.229
+  Downloaded hashbrown v0.12.3
+  Downloaded memchr v2.8.3
+  Downloaded k256 v0.13.4
+  Downloaded serde_json v1.0.154
+  Downloaded der v0.7.10
+  Downloaded cosmwasm-std v1.5.11
+  Downloaded cw-storage-plus v1.2.0
+  Downloaded crypto-bigint v0.5.5
+  Downloaded bnum v0.10.0
+  Downloaded syn v1.0.109
+  Downloaded proc-macro2 v1.0.107
+  Downloaded syn v3.0.10
+  Downloaded syn v2.0.119
+  Downloaded elliptic-curve v0.13.8
+  Downloaded schemars v0.8.22
+  Downloaded hmac v0.12.1
+  Downloaded getrandom v0.2.17
+  Downloaded derivative v2.2.0
+  Downloaded const-oid v0.9.6
+  Downloaded unicode-ident v1.0.27
+  Downloaded sha2 v0.10.9
+  Downloaded serde-json-wasm v0.5.2
+  Downloaded curve25519-dalek v3.2.0
+  Downloaded semver v1.0.28
+  Downloaded rand_core v0.5.1
+  Downloaded sec1 v0.7.3
+  Downloaded schemars_derive v0.8.22
+  Downloaded rand_core v0.6.4
+  Downloaded quote v1.0.47
+  Downloaded generic-array v0.14.9
+  Downloaded ff v0.13.1
+  Downloaded ecdsa v0.16.9
+  Downloaded base64ct v1.7.3
+  Downloaded libc v0.2.191
+   Compiling proc-macro2 v1.0.107
+   Compiling unicode-ident v1.0.27
+   Compiling quote v1.0.47
+   Compiling version_check v0.9.5
+   Compiling serde_core v1.0.229
+   Compiling syn v1.0.109
+   Compiling typenum v1.20.1
+   Compiling zmij v1.0.23
+   Compiling serde v1.0.229
+   Compiling serde_json v1.0.154
+   Compiling memchr v2.8.3
+   Compiling itoa v1.0.19
+   Compiling schemars v0.8.22
+   Compiling generic-array v0.14.9
+   Compiling thiserror v1.0.69
+   Compiling dyn-clone v1.0.20
+   Compiling cfg-if v1.0.5
+   Compiling base64 v0.21.7
+   Compiling bnum v0.10.0
+   Compiling forward_ref v1.0.0
+   Compiling static_assertions v1.1.0
+   Compiling hex v0.4.3
+   Compiling semver v1.0.28
+   Compiling syn v2.0.119
+   Compiling syn v3.0.10
+   Compiling crypto-common v0.1.6
+   Compiling block-buffer v0.10.4
+   Compiling digest v0.10.7
+   Compiling sha2 v0.10.9
+   Compiling serde_derive_internals v0.29.1
+   Compiling serde_derive v1.0.229
+   Compiling thiserror-impl v1.0.69
+   Compiling schemars_derive v0.8.22
+   Compiling derivative v2.2.0
+   Compiling cosmwasm-derive v1.5.11
+   Compiling cosmwasm-schema-derive v1.5.11
+   Compiling serde-json-wasm v0.5.2
+   Compiling cosmwasm-std v1.5.11
+   Compiling cosmwasm-schema v1.5.11
+   Compiling cw-storage-plus v1.2.0
+   Compiling cw2 v1.1.2
+   Compiling qorelease-staking-probe v0.1.0 (/code)
+    Finished `release` profile [optimized] target(s) in 49.00s
+Optimizing artifacts ...
+Optimizing qorelease_staking_probe.wasm ...
+Post-processing artifacts...
+4b0125a5b04a93295ebf6f8f15b4cf866a5c45506425d3eee3251245c6df0509  qorelease_staking_probe.wasm
+Done.
