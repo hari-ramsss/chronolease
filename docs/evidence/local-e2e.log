@@ -1,0 +1,108 @@
+﻿=== STEP 1-9, 13: real Native contract code with mocked staking queries ===
+wsl :    Compiling proc-macro2 v1.0.107
+At C:\Users\Hari Ram\Documents\chronoquota\scripts\local-e2e.ps1:9 char:1
++ wsl -d Ubuntu -- bash "/mnt/c/Users/Hari Ram/Documents/chronoquota/sc ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (   Compiling proc-macro2 v1.0.107:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+   Compiling generic-array v0.14.9
+   Compiling quote v1.0.47
+   Compiling libc v0.2.191
+   Compiling serde_core v1.0.229
+   Compiling serde v1.0.229
+   Compiling syn v1.0.109
+   Compiling ahash v0.7.9
+   Compiling thiserror v1.0.69
+   Compiling schemars v0.8.22
+   Compiling crypto-common v0.1.6
+   Compiling block-buffer v0.10.4
+   Compiling sec1 v0.7.3
+   Compiling digest v0.9.0
+   Compiling digest v0.10.7
+   Compiling block-buffer v0.9.0
+   Compiling curve25519-dalek v3.2.0
+   Compiling syn v2.0.119
+   Compiling syn v3.0.10
+   Compiling hmac v0.12.1
+   Compiling getrandom v0.2.17
+   Compiling rfc6979 v0.4.0
+   Compiling rand_core v0.6.4
+   Compiling sha2 v0.10.9
+   Compiling ff v0.13.1
+   Compiling crypto-bigint v0.5.5
+   Compiling group v0.13.0
+   Compiling signature v2.2.0
+   Compiling hashbrown v0.12.3
+   Compiling sha2 v0.9.9
+   Compiling serde_json v1.0.154
+   Compiling serde_derive_internals v0.29.1
+   Compiling elliptic-curve v0.13.8
+   Compiling serde_derive v1.0.229
+   Compiling thiserror-impl v1.0.69
+   Compiling ecdsa v0.16.9
+   Compiling schemars_derive v0.8.22
+   Compiling k256 v0.13.4
+   Compiling derivative v2.2.0
+   Compiling cosmwasm-derive v1.5.11
+   Compiling cosmwasm-schema-derive v1.5.11
+   Compiling ed25519-zebra v3.1.0
+   Compiling serde-json-wasm v0.5.2
+   Compiling cosmwasm-crypto v1.5.11
+   Compiling cosmwasm-schema v1.5.11
+   Compiling cosmwasm-std v1.5.11
+   Compiling cw-storage-plus v1.2.0
+   Compiling cw2 v1.1.2
+   Compiling qorelease-registry v0.1.0 (/mnt/c/Users/Hari Ram/Documents/chronoquota/contracts/qorelease-registry)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1m 27s
+     Running tests/e2e_native.rs (target/debug/deps/e2e_native-0768ecaaaf430f54)
+
+running 1 test
+test local_e2e_no_overbooking_and_finalization ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+=== STEP 5, 7-9, 12, 14: local EVM escrow + stateful bridge/native mocks ===
+No files changed, compilation skipped
+
+Ran 13 tests for test/QoreLeaseEscrow.t.sol:QoreLeaseEscrowTest
+[PASS] test_bridgeFailureIsHandled() (gas: 776570)
+[PASS] test_duplicateReservationIsRejected() (gas: 1207964)
+[PASS] test_emptyBridgeResponseIsRejected() (gas: 806737)
+[PASS] test_failedSettlementLeavesFundsInEscrow() (gas: 1385488)
+[PASS] test_invalidEvidenceCannotTriggerPayment() (gas: 1216212)
+[PASS] test_laterEvmRevertUndoesMockedNativeStateChange() (gas: 1391463)
+[PASS] test_localOverbookingRejectionRollsBackBuyerBTransfer() (gas: 1885859)
+[PASS] test_malformedNativeResponseIsRejected() (gas: 807466)
+[PASS] test_nativeRejectionRevertsEscrow() (gas: 810926)
+[PASS] test_refundReleasesNativeReservationAndReturnsFunds() (gas: 1312799)
+[PASS] test_successfulEscrowAndNativeReservation() (gas: 1542237)
+[PASS] test_validSettlementPaysProviderAndBlocksDuplicateSettlement() (gas: 1794976)
+[PASS] test_wrongJobOrTermsInResponseIsRejected() (gas: 2393870)
+Suite result: ok. 13 passed; 0 failed; 0 skipped; finished in 12.81ms (41.09ms CPU time)
+
+Ran 1 test suite in 24.50ms (12.81ms CPU time): 13 tests passed, 0 failed, 0 skipped (13 total tests)
+=== STEP 10-11: Native-gated provider adapter + local OpenAI-compatible workload ===
+Γ£ö valid reservation permits execution and produces a structured report (3.7087ms)
+Γ£ö missing reservation rejects execution before any workload call (0.7636ms)
+Γ£ö expired reservation rejects execution (0.2488ms)
+Γ£ö request exceeding reserved units is rejected (0.2173ms)
+Γ£ö terms hash mismatch is rejected (0.2317ms)
+Γ£ö released reservation is rejected and invalid job id fails fast (0.321ms)
+Γ£ö delivery evidence includes job id and terms hash and monitor binds to it (0.4525ms)
+Γä╣ tests 7
+Γä╣ suites 0
+Γä╣ pass 7
+Γä╣ fail 0
+Γä╣ cancelled 0
+Γä╣ skipped 0
+Γä╣ todo 0
+Γä╣ duration_ms 398.8699
+STEP 10: adapter checks Native reservation and executes 70 requests
+{"jobId":"0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","completedUnits":70,"failedUnits":0,"avgLatencyMs":2.93,"p95LatencyMs":5.42,"evidenceHash":"3eef24b6291cfb4a18f54b38a8704cdef80d8a3fa78e70deebab1281b8dce9d9"}
+STEP 11: independent monitors attest to the delivery report
+{"monitorId":"monitor-1","jobId":"0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","termsHash":"0x1111111111111111111111111111111111111111111111111111111111111111","deliveredUnits":70,"failedUnits":0,"p95LatencyMs":5.42,"evidenceHash":"3eef24b6291cfb4a18f54b38a8704cdef80d8a3fa78e70deebab1281b8dce9d9","reportHash":"e1157ae2c6843abfc2b55fe41bab9180d8757d81cd686f4d781298767d7a6f8f","mockAttestation":"ef3675906c678f65cc523dac8b66151405896271241507943f938f5bd06caa06"}
+{"monitorId":"monitor-2","jobId":"0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","termsHash":"0x1111111111111111111111111111111111111111111111111111111111111111","deliveredUnits":70,"failedUnits":0,"p95LatencyMs":5.42,"evidenceHash":"3eef24b6291cfb4a18f54b38a8704cdef80d8a3fa78e70deebab1281b8dce9d9","reportHash":"aac39b4769b051a3a38f5399615a2b2dd52a9d3252b55193b8f8b21ebb5ffbc2","mockAttestation":"a9b0795e65f4fc45a8215d9e3dd2877b87f6c904ac79611ecd471e7e3a3a7b23"}
+STEP 12: evidence fields are ready for local EVM validation
+{"jobId":"0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","termsHash":"0x1111111111111111111111111111111111111111111111111111111111111111","deliveredUnits":70,"providerId":"provider-a","slotId":"slot-1","note":"EVM validation of accepted evidence is proven by forge test test_validSettlementPaysProviderAndBlocksDuplicateSettlement"}
+=== LOCAL E2E COMPLETE (no Diana transactions) ===

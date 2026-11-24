@@ -4,11 +4,23 @@
 >
 > QoreLease is a proposed protocol for reserving measurable API / AI-inference capacity from service providers. QoreChain Native is intended to own provider-side commitments and capacity state; the EVM is intended to hold buyer-side fUSD escrow and settle verified delivery. The design is conditional on the Native-runtime feasibility checks in this document.
 
-**Project status:** Architecture specification / pre-implementation  
+**Project status:** Phase 1 local implementation complete; live Diana integration gates still open  
 **Target network:** QoreChain Diana testnet (`qorechain-diana`, EVM chain ID `9800`)  
 **Target hackathon category:** Cross-VM  
 **Primary implementation document:** This README  
 **Technical source index:** [`SOURCES.md`](SOURCES.md)
+
+> **Phase 1 implementation note (25 November 2026):** The project owner directed
+> implementation to begin before G0-A..E were closed. Actual code now exists in
+> `contracts/qorelease-registry/`, `contracts/evm/`, and
+> `services/provider-adapter/`. All tests are **local**: 12 Rust, 13 Foundry, and
+> 7 adapter tests pass, plus one combined local end-to-end run
+> (`scripts/local-e2e.ps1`). The accepted staking probe, optimized Wasm,
+> checksums, evidence, and Proposal A artifacts are preserved unchanged.
+> No Diana transaction, proposal, upload, or instantiation occurred. The bridge
+> response encoding, staking-query semantics, mapped EVM sender identity, and
+> bridge rollback remain **NOT VERIFIED**. See `docs/ARCHITECTURE.md`,
+> `docs/TEST_PLAN.md`, `docs/decisions/`, and `docs/FEASIBILITY_SPIKES.md`.
 
 ---
 

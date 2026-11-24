@@ -13,3 +13,9 @@ docs/evidence/*.powershell-raw.log
 docs/evidence/cargo-tree-base64ct.log
 docs/evidence/cargo-tree-base64ct-all-features.log
 docs/evidence/wasm-section-metrics.log
+
+# Phase 1 local build outputs (regenerate with the documented scripts)
+contracts/evm/out/
+contracts/evm/cache/
+contracts/evm/lib/forge-std/
+node_modules/

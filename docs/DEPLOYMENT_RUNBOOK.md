@@ -160,3 +160,45 @@ Latest live snapshot (height `10677513`, time `2026-11-24T16:34:02.221783810Z`):
 The package remains **NOT READY FOR SUBMISSION** because a real no-broadcast gas result and reviewed fee are unavailable without local PQC signing material, which was not accessed. No transaction was signed, cosigned, broadcast or submitted; no code was uploaded or instantiated. G0-A remains untested and not passed.
 
 Unsigned transaction preparation evidence: `docs/evidence/generate-proposal-a-unsigned-v3.2.10.sh` records the exact `qorechaind tx gov submit-proposal artifacts/proposals/proposal-a-store-probe.json --from qor1f0zn99as5ymf0m4curxrx4csz096vnrupdtadq --chain-id qorechain-diana --node https://rpc-testnet.qore.host:443 --generate-only --output json` invocation. Its valid unsigned output is `docs/evidence/proposal-a-unsigned-tx-v3.2.10.json`; generation log is adjacent. It is unsigned preparation only, has no final gas/fee, and is not a broadcast-ready transaction. The attempted dry-run command and its two key-related failures are preserved in `docs/evidence/dry-run-proposal-a-gas-v3.2.10.sh` and `docs/evidence/proposal-a-gas-dry-run-v3.2.10.log`.
+
+---
+
+## Phase 1 local implementation record — 25 November 2026
+
+The owner directed implementation to begin while G0-A..E remain open. This does
+not change their status. No proposal was submitted, no code uploaded, no contract
+instantiated, no transaction signed or broadcast, and no Diana RPC state changed
+during this work. The accepted staking probe, optimized Wasm, checksums, evidence,
+and Proposal A bundle were preserved unchanged.
+
+### New source and tools
+
+- `contracts/qorelease-registry/` — standalone CosmWasm 1.5.11 registry; pinned
+  `Cargo.lock` generated locally with the same dependency versions.
+- `contracts/evm/` — Foundry 1.5.1-stable in Ubuntu WSL2, Solidity 0.8.24,
+  forge-std v1.9.6 (`3b20d60d14b343ee4f908cb8079495c07f5e8981`).
+- `services/provider-adapter/` — TypeScript adapter, Node 24 type stripping.
+- `scripts/local-e2e.sh` and `scripts/local-e2e.ps1` — local demonstration.
+
+No live deployment configuration is claimed. The EVM bridge address defaults to
+the documented `0x0901` only as configuration; the escrow's actual bridge address
+is an admin-controlled deployment input. Diana live checks in the Phase 0 sections
+above must be refreshed before any deployment.
+
+### Actual local results
+
+- Native: 11 unit tests + 1 e2e integration test pass (`cargo test --locked`).
+- Solidity: 13 Foundry tests pass (`bash docs/evidence/run-foundry-tests.sh`).
+- Adapter: 7 Node tests pass; local demo executes 70 requests against a local
+  OpenAI-compatible HTTP endpoint and emits two independent monitor reports.
+- Full combined run: `powershell -ExecutionPolicy Bypass -File scripts/local-e2e.ps1 -SaveEvidence`.
+
+Evidence log: `docs/evidence/local-e2e.log`.
+
+### Deployment gates still blocking live use
+
+G0-A staking query semantics and unbonding inclusion; G0-B bank-message rollback
+through the bridge; G0-C mapped escrow sender and EVM window scope; G0-D real
+bridge atomicity, empty/malformed response, and response encoding; G0-E governance
+upload/allowlist/code pin. See `docs/FEASIBILITY_SPIKES.md` and
+`docs/decisions/ADR-0008-local-mocks.md`.

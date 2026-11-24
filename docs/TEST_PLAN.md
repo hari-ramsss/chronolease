@@ -1,17 +1,60 @@
-# Phase 0 test plan
+# QoreLease test plan and actual Phase 1 results
 
-All listed chain tests are planned, not executed. Retain exact commands,
-versions, source commit, checksum, tx hash, block height, logs, and observed
-state for each run.
+All results below are **local**. Status labels: `TESTED LOCALLY`, `NOT VERIFIED ON DIANA`.
 
-| Gate | Positive case | Negative case | Evidence |
-|---|---|---|---|
-| G0-A | Probe zero/one/multiple delegations; compare REST/CLI | malformed address, unsupported query, wrong denom, overflow | persisted probe result and matching staking query |
-| G0-B | bridged `BankMsg::Send` release/penalty | insufficient funds/module failure; EVM revert afterwards | balances and contract state before/after |
-| G0-C | mapped escrow caller is authorized | wrong sender and out-of-window/out-of-scope calls | `info.sender`, mapping, window query and receipts |
-| G0-D | Native and EVM changes persist | Native reject, later EVM revert, empty/malformed return, inactive bridge, unallowlisted target | state on both runtimes and receipts |
-| G0-E | proposal reaches passed state and pin is live | rejected/failed proposal or wrong pin | proposal status, code info/history, live params |
+## Commands (Windows PowerShell + Ubuntu WSL2)
 
-Never call a case passed based only on mocks, docs, simulation, or proposal
-submission. Do not broadcast until the operator explicitly approves the exact
-transaction batch.
+```powershell
+cd contracts/qorelease-registry
+cargo test --locked
+cd ..\..
+powershell -ExecutionPolicy Bypass -File scripts/local-e2e.ps1 -SaveEvidence
+```
+
+The orchestration script runs Rust e2e, Foundry, adapter tests and the local
+provider/monitor demo. Evidence: `docs/evidence/local-e2e.log`.
+
+## Native Rust — `TESTED LOCALLY` (12 passed)
+
+Registration with valid/insufficient stake; `uqor`-only checked aggregation;
+staking query error propagation via controlled mock; bond deposit with correct
+and wrong denomination; bond lock/release/withdraw; slot publication and
+overlap rejection; successful reservation; insufficient capacity; insufficient
+bond; duplicate job; unauthorized escrow caller; expired slot; permissionless
+expiry release; double finalization; breach penalty accounting; strict response
+layout; config authorization. `tests/e2e_native.rs` drives the real entry points
+for the 100/70/50 overbooking scenario.
+
+These tests use `MockQuerier` staking entries. They are not Diana verification.
+
+## Solidity / Foundry — `TESTED LOCALLY` (13 passed)
+
+Successful escrow + Native reservation; overbooking rejection with buyer B fUSD
+rollback; Native rejection revert; empty bridge response; malformed response;
+wrong job/terms in response; duplicate reservation; bridge failure; invalid
+evidence cannot pay; valid settlement with duplicate rejection; failed
+settlement leaves funds in escrow; refund releases Native state; forced later
+EVM revert undoes the stateful native mock's change.
+
+Foundry 1.5.1-stable, solc 0.8.24, forge-std v1.9.6 pinned. Atomicity tests use
+stateful mocked bridge/native contracts. They do not prove Diana bridge behaviour.
+
+## Provider adapter — `TESTED LOCALLY` (7 passed)
+
+Valid reservation permits execution; missing reservation rejects before any
+workload call; expired reservation rejects; request exceeding reserved units
+rejected; terms mismatch rejected; released reservation and invalid job id
+rejected; evidence contains correct job id/terms hash and monitor bindings.
+
+## Local E2E — `TESTED LOCALLY`
+
+`scripts/local-e2e.sh` reproduces the 14-step local scenario across the three
+components. Steps 1-9/13 use real Rust code with mocked staking; steps 5/7-9/12/14
+use real Solidity with a stateful local bridge/native mock; steps 10-11 use the
+adapter against a local OpenAI-compatible HTTP endpoint. No Diana transactions.
+
+## Still required on Diana (all `NOT VERIFIED`)
+
+G0-A staking query semantics; G0-B bank-message effects through bridge; G0-C
+sender mapping/window; G0-D all bridge atomicity and response cases; G0-E
+governance. Do not mark any of these passed from local mocks.
