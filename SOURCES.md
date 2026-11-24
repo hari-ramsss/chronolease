@@ -1,227 +1,407 @@
-# ChronoQuota — Research Sources and Technical Reference Pack
+# QoreLease — Technical Source Reference
 
-**Last curated:** 23 November 2026  
-**Purpose:** Give the coding/research agent a reliable starting set of official documentation, live endpoints, standards, source code, and prize-winning project references.  
-**Important:** This list is not exhaustive. The agent is encouraged to inspect linked repositories, search beyond these sources, read new release notes, and verify every chain-dependent fact live.
+This file is the source index for the implementation agent. It is intentionally separate from the product README so the agent can retrieve primary material without treating this specification as a substitute for the chain's own documentation.
 
----
-
-## 1. Source hierarchy and research rules
-
-Use sources in this order when there is a conflict:
-
-1. Live QoreChain Diana testnet parameters, on-chain contract metadata/code hashes, and verified transaction behaviour.
-2. Current official QoreChain documentation and governance proposals.
-3. Exact source code and SDK/package versions that match the network/deployed contract.
-4. Upstream standards and implementation sources such as CosmWasm/CW20, NIST, MCP, and x402.
-5. Official ETHGlobal/DoraHacks winner records and project repositories.
-6. Secondary articles and community write-ups.
-
-For each technical assumption record: URL, read date, version, command/endpoint, observed result, and unresolved caveats. Do not hard-code a target address or ABI from this document without a live verification.
+**Last reviewed:** 24 November 2026  
+**Target network:** QoreChain Diana testnet (`qorechain-diana`)  
+**Reference hierarchy:** Current QoreChain documentation and live network parameters take precedence over this file. QoreChain source code / released binaries take precedence over older tutorials. General CosmWasm documentation explains standard APIs but does not prove QoreChain enables them.
 
 ---
 
-## 2. Official QoreChain hackathon resources
+## 1. Read these first — essential QoreChain documentation
 
-| Resource | URL | Why it matters |
-|---|---|---|
-| Build Before Q-Day home | https://build.qorechain.io/ | Official event description, current activity and developer entry point. |
-| Rules | https://build.qorechain.io/rules | Eligibility, team size, timelines, required submission materials, project rules. |
-| Prizes | https://build.qorechain.io/prizes | Official category requirements, including Cross-VM: EVM contract atomically calls approved Native contract; current prize information. |
-| Project gallery | https://build.qorechain.io/projects | Inspect existing submissions and avoid duplicating current Cross-VM projects. |
-| Developer kits | https://build.qorechain.io/kits | Official SDKs, templates and kits. |
-| Workshop overview | https://docs.qorechain.io/build-before-qday/ | Current tutorial index and setup requirements. |
-| Workshop 1 | https://docs.qorechain.io/build-before-qday/workshop-1/ | Basic dApp / QoreChain setup as linked from workshop index; confirm current URL from the index if moved. |
-| Workshop 2 | https://docs.qorechain.io/build-before-qday/workshop-2/ | PQC account / agent material; use the live workshop index if moved. |
-| Workshop 3 — Encrypted apps and Cross-VM | https://docs.qorechain.io/build-before-qday/workshop-3/ | Most important starting implementation. Includes EVM-to-Native bridge example, approved `qday-receipts` contract, scoped EVM window, success and rollback scenarios, and troubleshooting. |
+### 1.1 Cross-VM Interoperability
 
-### Cross-VM acceptance criteria
+URL: https://docs.qorechain.io/developer-guide/cross-vm-interoperability/
 
-The official prize page is the source of truth for the category. Verify it again immediately before submission. The core requirement is a working EVM-to-Native call to an approved Native contract, with atomic execution demonstrated on testnet.
+Use this for:
+- The architecture of EVM, QoreChain Native, and SVM.
+- Difference between synchronous and queued cross-VM calls.
+- EVM-to-Native precompile address `0x0000000000000000000000000000000000000901`.
+- `executeCrossVMCall(uint8,string,bytes)` input shape.
+- `targetVM = 1` for Native / CosmWasm.
+- UTF-8 JSON execute payload for Native contracts.
+- Raw response bytes.
+- Message limits, gas, allowlist and network status.
+- The warning that an inactive precompile can return empty data without executing the target.
+
+Important implementation points:
+- Fail closed on empty or malformed return data.
+- Re-check the live cross-VM parameters before every test.
+- Do not attach Native funds through the EVM precompile.
+- Do not use the asynchronous path for a workflow that requires same-transaction escrow and reservation.
+
+### 1.2 Cross-VM Calls Reference (v3.2.8)
+
+URL: https://docs.qorechain.io/developer-guide/cross-vm-reference/
+
+Use this for:
+- Exact cross-VM message fields and execution behaviour.
+- Caller / sender identity mapping.
+- Authorization-window requirements.
+- Error conditions and payload size.
+- Atomic transaction behaviour.
+
+Particularly important details to verify against the current page:
+- A Solidity contract calling the bridge is represented to the Native contract through its `qor1...` address mapping.
+- A revert anywhere in the enclosing EVM transaction is intended to undo the Native side as well.
+- The `0x0901` call needs an open EVM authorization window that admits it.
+- The target must be present in `bridge_allowed_targets` and its code pin must match.
+- A Native contract invoked through the bridge must not assume `info.sender` is the original human buyer. It is the mapped caller identity described by the cross-VM docs.
+
+### 1.3 EVM Precompiles and live network status
+
+URL: https://docs.qorechain.io/developer-guide/evm-precompiles/
+
+Use this for:
+- Current precompile addresses and live active/inactive state.
+- Difference between Diana testnet and Vladi mainnet.
+- PQC verification precompiles if used in monitor-report verification.
+- Important warning: a call to an address not active as a precompile can succeed with empty return data.
+
+Do not assume the AI risk / anomaly precompiles are active. Do not assume the mainnet and testnet precompile lists match.
+
+### 1.4 QoreChain Native Development
+
+URL: https://docs.qorechain.io/developer-guide/cosmwasm-development/
+
+Use this for:
+- Native contract lifecycle: build, store, instantiate, execute, query.
+- CosmWasm contract entry points and project prerequisites.
+- Contract storage and smart-query examples.
+- Module integration.
+- QoreChain-specific gas / upload constraints.
+
+The page demonstrates Native contract integration with:
+- `BankMsg::Send` for native QOR (`uqor`) transfers.
+- `StakingMsg::Delegate` for delegation operations.
+
+**Do not over-interpret this page:** it demonstrates staking messages but does not establish that `StakingQuery::AllDelegations` is enabled for QoreChain CosmWasm contracts. That is a separate feasibility test.
+
+### 1.5 Governance Proposals for Contracts: Upload Native Code and Open Cross-VM Access
+
+URL: https://docs.qorechain.io/developer-guide/governance-proposals-contracts/
+
+Use this for:
+- Testnet Native code upload through governance.
+- Contract instantiation procedure.
+- Adding a Native contract to `bridge_allowed_targets`.
+- Pinning the target to a specific code ID and code history length.
+- Building reproducible Wasm checksums.
+- Governance proposal deposits, voting windows, thresholds, hybrid signing, and troubleshooting.
+
+Important:
+- Read the live governance parameters before submitting anything.
+- The page's 22 November 2026 figures are a snapshot, not permanent constants.
+- A proposal submission is not approval.
+- Prefer a no-admin deployment where appropriate; record and verify the actual code pin.
+- `MsgUpdateParams` for Cross-VM can replace the whole parameter set. Preserve every current field and modify only the intended target / pin entries.
+
+### 1.6 CosmWasm Gas, Pricing and Upload Limits
+
+URL: https://docs.qorechain.io/developer-guide/cosmwasm-gas-and-limits/
+
+Use this for:
+- Current Native Wasm gas model.
+- Per-block and per-transaction Wasm budget.
+- Dynamic congestion pricing.
+- Upload and module restrictions.
+- Simulation and gas safety margin.
+
+Do not hard-code gas from old Workshop examples. Simulate the real transaction on the target testnet and apply the current documented margin.
+
+### 1.7 EVM Authorization Window Reference
+
+URL: https://docs.qorechain.io/developer-guide/evm-window-reference/
+
+Use this for:
+- ML-DSA-87 / hybrid key registration requirements.
+- Opening, closing, and reading EVM authorization windows.
+- Transaction count, block duration, value cap, and target scoping.
+- `allowed_targets` and version-specific query fields.
+- Why the classical EVM key alone cannot open the authorization window.
+
+The exact scope needed for the app's EVM transaction and internal precompile call must be verified on Diana. Do not assume the window only needs the EVM escrow address, or only needs `0x0901`; run the transaction and inspect the current scope rules.
+
+### 1.8 Workshop 3 — CrossVmCheckout
+
+URL: https://docs.qorechain.io/build-before-qday/workshop-3/
+
+Official example repository:
+https://github.com/qorechain/build-before-qday/tree/main/workshop-3/02-cross-vm
+
+Use this as the canonical starter for:
+- Foundry / Solidity project setup.
+- Rust Native contract project setup.
+- `CrossVmCheckout` contract interaction with `qday-receipts`.
+- Bridge call scripts and EVM authorization window helpers.
+- Native contract deployment / interaction scripts.
+- Successful cross-VM execution and rollback test cases.
+
+The workshop intentionally demonstrates a simple EVM counter plus Native receipt. QoreLease must go beyond this by implementing provider eligibility, provider-side capacity accounting, service-bond state, real workload execution, and measured settlement. Do not represent the workshop receipt book as a QoreLease registry.
 
 ---
 
-## 3. Core QoreChain technical documentation
+## 2. Staking-query research — critical feasibility question
 
-| Topic | URL | What to extract |
-|---|---|---|
-| Cross-VM interoperability overview | https://docs.qorechain.io/developer-guide/cross-vm-interoperability/ | Which directions and lanes work today; synchronous vs queued calls; bridge/precompile constraints. |
-| Cross-VM calls reference | https://docs.qorechain.io/developer-guide/cross-vm-reference/ | Current call fields, gas/limits, payload, failure behaviour, allowlist and return semantics. The page may be labelled v3.2.8 while Diana has moved to v3.2.9; reconcile with live data. |
-| EVM precompiles | https://docs.qorechain.io/developer-guide/evm-precompiles/ | Addresses, active-precompile status, ABIs, empty-return behaviour and available functionality. |
-| EVM authorization-window reference | https://docs.qorechain.io/developer-guide/evm-window-reference/ | Registered ML-DSA-87 key, opening/closing windows, scope, target restrictions, value and transaction caps, nonce behaviour. |
-| Post-quantum signing | https://docs.qorechain.io/developer-guide/post-quantum-signing/ | QoreChain's ML-DSA/ML-KEM/SHAKE use and sign-bytes details. |
-| PQC library | https://docs.qorechain.io/developer-tools/pqc-library/ | Official API and language bindings for ML-DSA-87, ML-KEM-1024 and SHAKE-256. |
-| SDK/package overview | https://docs.qorechain.io/developer-tools/overview/ | Current package list, chain endpoints, package names and network parameters. |
-| Chain Developer Kit | https://docs.qorechain.io/developer-tools/chain-dev-sdk/ | Current EVM window helpers, QoreChain SDK workflows and network requirements. |
-| Governance proposals for Native contracts | https://docs.qorechain.io/developer-guide/governance-proposals-contracts/ | How to store/instantiate a CosmWasm contract and add it to the Cross-VM allowlist via governance; checked against Diana on 22 Nov 2026. |
-| CosmWasm gas and limits | https://docs.qorechain.io/developer-guide/cosmwasm-gas-and-limits/ | Native contract upload limits, gas and build considerations. |
-| QoreChain feature/version status | https://docs.qorechain.io/introduction/key-features/ | Release history and feature status. Verify against the newest live version; documentation pages may lag. |
-| QoreChain version history | https://docs.qorechain.io/appendix/version-history/ | Upgrade notes, circuit-breaker and contract upload restrictions. |
+### 2.1 CosmWasm standard-library definition
 
-### Important snapshot facts to re-verify
+Source code:
+https://github.com/CosmWasm/cosmwasm/blob/main/packages/std/src/query/staking.rs
 
-- Diana testnet EVM chain ID: `9800`.
-- Diana chain ID: `qorechain-diana`.
-- Official governance-proposal guide reports Diana v3.2.9 since 20 November 2026.
-- Synchronous EVM-to-Native bridge precompile: `0x0000000000000000000000000000000000000901`.
-- Documented function: `executeCrossVMCall(uint8 targetVM, string targetContract, bytes payload)`.
-- `targetVM = 1` denotes QoreChain Native / CosmWasm.
-- Mainnet Cross-VM is paused/not the target for the hackathon demo; confirm live state before relying on this.
-- The Cross-VM reference page may still carry the v3.2.8 label. Treat live network endpoints and latest governance guide as necessary checks.
-- The synchronous precompile requires a governance-approved Native target. It can return empty data if inactive; low-level Solidity must check `ok` and response length.
-- Native reads should use Native REST smart queries; do not assume the EVM bridge supports `STATICCALL` queries.
-- Ordinary EVM txs use secp256k1 but require the account to have a registered ML-DSA-87 key and a live Native-lane hybrid-authorized EVM window. Do not claim that each EVM tx itself carries an ML-DSA signature.
+This source defines `StakingQuery::AllDelegations { delegator: String }` and the corresponding `AllDelegationsResponse` structure in the standard library.
+
+**This proves only that the API exists in the CosmWasm standard library. It does not prove QoreChain's deployed Wasm query router exposes it to contracts.**
+
+### 2.2 QoreChain staking guide
+
+URL: https://docs.qorechain.io/user-guide/staking-and-delegation/
+
+Use this to understand:
+- QOR staking and delegation behaviour.
+- Native account and validator address formats.
+- Unbonding, lock, and stake semantics.
+- Current staking tier / lock rules.
+
+Do not treat a REST/CLI staking query as proof that a CosmWasm contract can execute the same query internally.
+
+### 2.3 QoreChain CLI staking query reference
+
+URL: https://docs.qorechain.io/cli-reference/query-commands/
+
+The CLI documentation includes a delegations query. Use the CLI / REST result as an independent reference when comparing the contract probe output.
+
+Example query:
+
+```bash
+qorechaind query staking delegations <QOR_ADDRESS> --node https://rpc-testnet.qore.host:443
+```
+
+### 2.4 Required spike
+
+Implement a minimal contract that tries the standard `query_all_delegations` / `StakingQuery::AllDelegations` route against the deployed Diana runtime. Record:
+
+- Rust / `cosmwasm-std` versions.
+- Wasm optimizer image and checksum.
+- Contract code ID and address.
+- Exact execute message and transaction hash.
+- Query result stored by the contract.
+- Matching CLI / REST query for the same provider.
+- Whether the contract was invoked directly by a Native transaction, through the EVM bridge, or both.
+- Which stake categories are returned and excluded.
+
+If an unsupported-query error occurs, capture the exact response and stop. Do not replace it with an off-chain trusted API result while retaining a claim of on-chain staking admission.
 
 ---
 
-## 4. Live Diana endpoints to inspect before deployment
+## 3. QoreChain SDK / client references
 
-These endpoints are for reads. Use them in a read-only preflight script and retain the raw JSON output in `docs/RESEARCH_LOG.md`.
+### 3.1 QoreChain SDK overview
 
-| Endpoint | Purpose |
+URL: https://docs.qorechain.io/sdk/overview/
+
+Use this for the official SDK's network model, Native / EVM clients, account derivation, transaction submission, and current package surfaces.
+
+### 3.2 SDK quickstart / repository
+
+Repository: https://github.com/qorechain/qorechain-sdk
+
+Use the current repository README and package docs rather than relying on a package snippet copied from an older tutorial. Confirm the published package version and API signatures before coding.
+
+### 3.3 QoreChain SDK examples
+
+URL: https://docs.qorechain.io/sdk/examples/
+
+Use this for:
+- Native smart queries.
+- Reading deployed contract metadata.
+- Client initialization.
+- Current supported SDK examples.
+
+### 3.4 Testnet connection details
+
+URL: https://docs.qorechain.io/getting-started/connecting-to-testnet/
+
+Current documented public Diana endpoints:
+
+| Interface | Endpoint |
 |---|---|
-| `https://api-testnet.qore.host/qorechain/crossvm/v1/params` | `enabled`, `bridge_allowed_targets`, `bridge_target_pins`, and current Cross-VM limits. |
-| `https://api-testnet.qore.host/cosmos/circuit/v1/disable_list` | Confirm whether `/qorechain.crossvm.v1.MsgCrossVMCall` is disabled. |
-| `https://api-testnet.qore.host/cosmos/evm/vm/v1/params` | Inspect `active_static_precompiles`. |
-| `https://api-testnet.qore.host/cosmwasm/wasm/v1/codes/params` | Inspect code-upload permissions. |
-| `https://api-testnet.qore.host/cosmwasm/wasm/v1/code?pagination.reverse=true&pagination.limit=1` | Read current latest Native code ID. |
-| `https://api-testnet.qore.host/cosmwasm/wasm/v1/code/{CODE_ID}` | Inspect stored code metadata and data hash. |
-| `https://api-testnet.qore.host/cosmwasm/wasm/v1/code/{CODE_ID}/contracts` | List contracts instantiated from a code ID. |
-| `https://api-testnet.qore.host/cosmwasm/wasm/v1/contract/{CONTRACT_ADDRESS}` | Inspect Native contract metadata, code ID, admin. |
-| `https://api-testnet.qore.host/cosmwasm/wasm/v1/contract/{CONTRACT_ADDRESS}/history` | Inspect contract code history and pin information. |
-| `https://api-testnet.qore.host/cosmwasm/wasm/v1/contract/{CONTRACT_ADDRESS}/smart/{BASE64_QUERY}` | Execute a read-only Native smart query. Base64-encode the JSON query. |
-| `https://api-testnet.qore.host/qorechain/pqc/v1/evm_window/{QOR1_ADDRESS}` | Inspect a QoreChain EVM authorization window. |
-| `https://evm-testnet.qore.host` | EVM JSON-RPC. |
-| `https://rpc-testnet.qore.host:443` | Consensus RPC endpoint used in official CLI examples. |
+| Native REST | `https://api-testnet.qore.host` |
+| Consensus RPC | `https://rpc-testnet.qore.host` |
+| EVM JSON-RPC | `https://evm-testnet.qore.host` |
+| EVM WebSocket | `wss://evm-ws-testnet.qore.host` |
+| Explorer | `https://explore.qore.network` (select Testnet) |
 
-### Current documented Native receipt target
+The endpoints are shared and rate-limited. Use test accounts only.
 
-The official Workshop 3 guide identifies:
+---
 
-```text
-qday-receipts:
-qor1xjayq5ev55tkzpml9klxwyshr7gdrha0nurha9jhm0f0gdckksgs3gltw8
+## 4. Live network checks and useful endpoints
+
+Run these checks immediately before deployment and preserve their output in `docs/evidence/`.
+
+```bash
+# Current cross-VM parameters, enabled state, allowlist, code pins, and limits
+curl -s https://api-testnet.qore.host/qorechain/crossvm/v1/params | jq
+
+# Current active / disabled circuit-breaker message types
+curl -s https://api-testnet.qore.host/cosmos/circuit/v1/disable_list | jq
+
+# CosmWasm upload parameters
+curl -s https://api-testnet.qore.host/cosmwasm/wasm/v1/codes/params | jq
+
+# Governance voting parameters; re-read all fields before any proposal
+curl -s https://api-testnet.qore.host/cosmos/gov/v1/params/voting | jq
+
+# Native staking delegations for comparison with the contract staking probe
+curl -s "https://api-testnet.qore.host/cosmos/staking/v1beta1/delegations/<QOR_ADDRESS>" | jq
+
+# EVM authorization-window state
+curl -s "https://api-testnet.qore.host/qorechain/pqc/v1/evm_window/<QOR_ADDRESS>" | jq
+
+# Confirm EVM chain ID
+cast chain-id --rpc-url https://evm-testnet.qore.host
 ```
 
-Its documented execute/query schemas are in Workshop 3. It is an append-only receipt contract and a useful rollback demonstration target, **not** a purpose-built quota engine.
+Expected EVM chain ID for Diana: `9800` (`0x2648`). Confirm from live RPC rather than assuming.
 
-### WDT candidate — re-verify before any use
+### Useful contract verification endpoints
 
-The previous research report identified this candidate WDT CW20 address:
+```bash
+# Contract metadata / code ID / admin
+curl -s "https://api-testnet.qore.host/cosmwasm/wasm/v1/contract/<CONTRACT_ADDRESS>" | jq
 
-```text
-qor14hj2tavq8fpesdwxxcu44rty3hh90vhujrvcmstl4zr3txmfvw9s93uuqt
+# Contract code info / checksum
+curl -s "https://api-testnet.qore.host/cosmwasm/wasm/v1/code/<CODE_ID>" | jq
+
+# Code history
+curl -s "https://api-testnet.qore.host/cosmwasm/wasm/v1/contract/<CONTRACT_ADDRESS>/history" | jq
 ```
 
-Do not assume it is currently in `bridge_allowed_targets`. Verify the live Cross-VM params, code ID, code hash, contract metadata and query/execute schema.
+Use the current documented API response structure and confirm it against the live gateway before parsing fields in scripts.
 
 ---
 
-## 5. Critical CW20 semantics source
+## 5. Denominations, addresses, and unit handling
 
-| Source | URL | Why it matters |
+### QOR denomination
+
+QoreChain Native uses:
+- Display denomination: `QOR`.
+- Base denomination: `uqor`.
+- Conversion: `1 QOR = 1,000,000 uqor` (6 decimals).
+
+The EVM represents QOR using 18-decimal conventions. Confirm the exact token / bank bridge behaviour and never compare the Native integer amount directly with an EVM wei amount without conversion.
+
+### Address formats
+
+- Native account address: `qor1...`.
+- Validator operator address: `qorvaloper1...`.
+- EVM account / contract: `0x...`.
+
+A unified key/account mapping does not mean the address strings are interchangeable. Use the documented SDK / chain address-conversion mechanism and verify the mapped identity for the deployed EVM escrow contract.
+
+### fUSD
+
+The Diana faucet documents test assets including fUSD. The agent must discover and verify the actual fUSD contract address, decimals, token behaviour, and faucet path on the live testnet. Do not guess or hard-code an address copied from an unrelated test deployment. Use a local mock token for deterministic unit tests if needed; use the actual supported test token for final integration.
+
+---
+
+## 6. Governance and custom contract deployment
+
+### Required reading
+
+https://docs.qorechain.io/developer-guide/governance-proposals-contracts/
+
+The documented Diana workflow requires governance for code storage and Cross-VM allowlisting. The allowlist target is pinned to its code ID and code history length.
+
+### Items to confirm from live chain state
+
+- `code_upload_access`.
+- `MsgStoreCode` circuit-breaker status.
+- `instantiate_default_permission`.
+- Current proposal deposit and voting parameters.
+- Existing `bridge_allowed_targets` entries.
+- Existing `bridge_target_pins` entries.
+- Every current Cross-VM parameter field before constructing `MsgUpdateParams`.
+- Whether the target code can be deployed without an admin.
+- Whether the contract history length and code ID remain exactly as pinned.
+
+Do not copy a stale complete Cross-VM parameter JSON object from this document or a prior proposal. A parameter update may replace the whole set. Fetch the current object and change only the intended allowlist / pin entries.
+
+### Governance evidence to retain
+
+- Wasm source commit.
+- Optimizer image and architecture.
+- SHA-256 checksum.
+- Code upload proposal JSON.
+- Instantiation proposal JSON, if separate.
+- Allowlist proposal JSON.
+- Proposal IDs and final status.
+- Code ID and contract address.
+- Contract history.
+- Live allowlist and code pin query output.
+
+---
+
+## 7. General CosmWasm references
+
+These sources explain standard Rust / CosmWasm development. Always check compatibility with the CosmWasm / wasmd versions actually deployed by QoreChain.
+
+- CosmWasm documentation: https://docs.cosmwasm.com/
+- CosmWasm standard library: https://github.com/CosmWasm/cosmwasm
+- `StakingQuery` source: https://github.com/CosmWasm/cosmwasm/blob/main/packages/std/src/query/staking.rs
+- `BankMsg` / `StakingMsg` standard APIs: https://docs.rs/cosmwasm-std/latest/cosmwasm_std/
+- `cw-multi-test` repository: https://github.com/CosmWasm/cw-multi-test
+
+Important: `cw-multi-test` is useful for fast unit / contract-flow tests, but it does not prove QoreChain-specific query-router support, precompile execution, governance allowlisting, or cross-runtime rollback. Those require QoreChain integration tests.
+
+---
+
+## 8. Solidity / Foundry references
+
+Use the current official tools and pin versions in the repository:
+
+- Foundry book: https://book.getfoundry.sh/
+- Solidity documentation: https://docs.soliditylang.org/
+- OpenZeppelin Contracts: https://docs.openzeppelin.com/contracts/
+- QoreChain EVM development: https://docs.qorechain.io/developer-guide/evm-development/
+- QoreChain EVM precompiles: https://docs.qorechain.io/developer-guide/evm-precompiles/
+
+The bridge call should be isolated in a small library / interface. Keep the low-level call and response validation explicit. Do not assume OpenZeppelin's standard ERC-20 wrappers solve the chain-specific Cross-VM response or authorization-window requirements.
+
+---
+
+## 9. Current facts versus assumptions
+
+| Statement | Status | Source / proof required |
 |---|---|---|
-| CW20 README / semantics | https://github.com/CosmWasm/cw-plus/blob/main/packages/cw20/README.md | Documents `IncreaseAllowance`, `DecreaseAllowance`, expiry and the intentional saturating-to-zero behaviour. |
-| CW20-base contract | https://github.com/CosmWasm/cw-plus/blob/main/contracts/cw20-base/src/contract.rs | Shows execute dispatch and which allowance functions are called. |
-| CW20 allowance implementation | https://github.com/CosmWasm/cw-plus/blob/main/contracts/cw20-base/src/allowances.rs | Inspect exact `execute_decrease_allowance`, `execute_increase_allowance`, and `deduct_allowance` implementation. |
-| CW20 package types | https://github.com/CosmWasm/cw-plus/blob/main/packages/cw20/src/msg.rs | Exact message fields and `Expiration` type. |
-
-**Key caution:** `DecreaseAllowance` is not a generic checked quota decrement. The upstream interface describes it as robust: reducing by the current amount or more clears the allowance rather than behaving like an underflow error. Do not assume that a pre-existing expiry will make every `decrease_allowance` call fail after expiration. Inspect exact deployed code and test its behaviour. A purpose-built Native state machine with explicit height checks and checked arithmetic is preferred for real capability enforcement.
-
----
-
-## 6. QoreChain starter source code and packages
-
-| Source | URL | Use |
-|---|---|---|
-| Build Before Q-Day workshops | https://github.com/qorechain/build-before-qday | Use Workshop 3 as the smallest known EVM-to-Native working implementation and adapt its code with attribution. |
-| QoreChain core | https://github.com/qorechain/qorechain-core | Protocol source, changelog, precompile and Cross-VM behaviour. Use the correct release/tag for the testnet. |
-| QoreChain PQC library | https://github.com/qorechain/qorechain-pqc | Canonical cross-language PQC implementation and test vectors. |
-| QoreChain SDK | https://www.npmjs.com/package/@qorechain/sdk | Check current published package version and helpers. |
-| QoreChain EVM package | https://www.npmjs.com/package/@qorechain/evm | Check current ABI and precompile helpers. |
-| QoreChain RDK | https://www.npmjs.com/package/@qorechain/rdk | Reference for Cross-VM encoder helpers as documented by QoreChain. |
-| QoreChain PQC package | https://www.npmjs.com/package/@qorechain/pqc | TypeScript/JavaScript PQC operations. |
-| QoreChain QoreSeal docs | https://docs.qorechain.io/developer-tools/qoreseal/ | Optional encrypted payload approach; do not add to MVP unless useful. |
-
-Before pinning versions, inspect the package registry, repository release tags, changelog, current docs, and example lockfiles. Prefer the versions used by the current official Workshop 3.
+| QoreChain Native is the CosmWasm runtime | Documented | QoreChain Native Development |
+| Diana has a synchronous EVM-to-Native bridge at `0x0901` | Documented, but live status must be re-read | Cross-VM Interoperability + EVM Precompiles |
+| Bridge target must be allowlisted | Documented | Cross-VM + Governance Proposals |
+| Bridge call runs in same EVM transaction and is rolled back on EVM revert | Documented; must be integration-tested for this project's message effects | Cross-VM Reference + G0-D |
+| EVM caller identity is mapped to a Native address | Documented; verify actual deployed escrow mapping | Cross-VM Reference + G0-C |
+| Native contracts can emit `BankMsg::Send` | Documented as general Native module integration | Native Development; separately test from bridge context |
+| Native contracts can emit `StakingMsg::Delegate` | Documented as general Native module integration | Native Development; separately test from bridge context |
+| `StakingQuery::AllDelegations` exists in standard CosmWasm | Confirmed in standard library source | CosmWasm `staking.rs` |
+| QoreChain Diana exposes `StakingQuery::AllDelegations` to deployed contracts | **Not verified** | Must pass G0-A |
+| A bridge-invoked contract can safely emit Native bank messages with full rollback semantics | **Not verified for QoreLease path** | Must pass G0-B |
+| Provider declared capacity matches physical API/GPU capacity | Not provable by registry alone | Requires independent provider/monitor assumptions |
+| Monitor-signed SLA report is objectively truthful | Not guaranteed by signature | Requires independent measurement / challenge assumptions |
+| Mainnet can run this Cross-VM architecture today | Not supported by current docs | Mainnet bridge / Native contract availability must be re-checked; target is Diana testnet |
 
 ---
 
-## 7. Competitive research — confirmed winners only
+## 10. Research discipline for the coding agent
 
-These projects are included because their official organizer or ETHGlobal pages confirm a prize/award. Use them as architecture and product research. Do not copy their code without respecting the license and attribution. Do not claim ChronoQuota invented features they already demonstrate.
+When a question is not answered by this file:
 
-### 7.1 AgentFabric — closest overall product precedent
+1. Search the QoreChain docs for the exact feature and current release.
+2. Open the primary documentation page; do not rely only on search snippets.
+3. Inspect the official SDK or chain source if the docs are ambiguous.
+4. Check live Diana parameters for current network state.
+5. Build a minimal reproducer if the question concerns runtime behaviour.
+6. Record the result in `docs/FEASIBILITY_SPIKES.md` or an ADR.
+7. Update this source index with the exact source URL, version / date, and the conclusion.
 
-- **Award:** Cronos x402 PayTech Hackathon, Main Track / x402 Applications, 1st place; Cronos announced a $24,000 Cronos Ignition Builder Residency.
-- **Official winner announcement:** https://blog.cronos.com/p/announcing-the-cronos-x402-hackathon
-- **DoraHacks submission:** https://dorahacks.io/buidl/38376
-- **Source repository:** https://github.com/nschwermann/agent_fabric
-- **Demo:** https://www.youtube.com/watch?v=xfvH6TqvJd8
-- **What it demonstrates:** Scoped session keys, smart-account permissions, paid APIs through x402, API proxies, reusable workflows, MCP servers, and bounded agent execution without giving the agent the owner's primary key.
-- **Research questions:** How does it create/deploy the smart account? Where is scope enforced? What does the session key actually sign? How do x402 quote/verification/settlement work? What is off-chain versus on-chain? How are workflow APIs exposed to MCP?
-- **ChronoQuota differentiation to prove:** Native capability/quota lifecycle, atomic Native reservation + EVM escrow state, provider receipt and job-state binding, and independent dual-VM invariant checks. Do not merely rebuild scoped permissions + MCP + x402.
-
-### 7.2 ETHGlobal winners relevant to agent authority
-
-| Project | Confirmed award | Official page | Architectural pattern to study |
-|---|---|---|---|
-| Harness | ETHOnline 2026 — Ledger AI Agents x Ledger, 1st | https://ethglobal.com/showcase/harness-vvvaq | Per-agent isolated execution environment, identity, owner-defined spending limit, hardware approval for escalation. |
-| Kagi Wallet | ETHGlobal Tokyo 2026 — Intercepta, 1st | https://ethglobal.com/showcase/kagi-wallet-tc9fp | Threshold wallet authority, capped/expiring delegated keys, hardware threshold approvals. |
-| Signel | ETHGlobal Cannes 2026 — Ledger AI Agents x Ledger, 1st | https://ethglobal.com/showcase/signel-jfdgu | Contract/function selector/amount/period-scoped delegated permissions. |
-| allowance.eth | ETHGlobal New York 2026 — ENS award | https://ethglobal.com/showcase/allowance-eth-ejosk | Policy attached to agent identity, natural language to validated policy JSON, on-chain PolicyGuard. |
-| AgentGate | ETHGlobal Cannes 2026 — World AgentKit, Best use of Agent Kit, 1st | https://ethglobal.com/showcase/agentgate-scs65 | Provider-facing pay-per-call API gateway, API registration, x402 service access and pricing. |
-
-### 7.3 ETHGlobal winners relevant to usage-based agent commerce
-
-| Project | Confirmed award | Official page | Pattern |
-|---|---|---|---|
-| Turnstile | ETHOnline 2026 sponsor awards (verify exact sponsor/category on the official project page before citing it in submission) | https://ethglobal.com/showcase/turnstile-ovks1 | Agent-to-agent paid analysis/API consumption. |
-| AgentGate | Cannes 2026 — World AgentKit, 1st | https://ethglobal.com/showcase/agentgate-scs65 | Pay-per-call provider gateway. |
-| AgentFabric | Cronos x402 PayTech Hackathon — Main Track, 1st | https://dorahacks.io/buidl/38376 | End-to-end agent execution fabric, MCP, scoped session keys, x402. |
-
-When using Turnstile in external claims, re-check its live official page and prize label. If the precise award is not visible, discuss it as a technical reference, not as a confirmed prize winner.
-
----
-
-## 8. Standards and protocol references
-
-| Topic | URL | Relevance |
-|---|---|---|
-| x402 neutral documentation | https://github.com/x402-foundation/x402/tree/main/docs | Open HTTP 402 payment protocol, client/server/facilitator flows, batch settlement. |
-| x402 introduction | https://github.com/x402-foundation/x402/blob/main/docs/introduction.md | High-level payment flow and terminology. |
-| MCP specification — tools | https://github.com/modelcontextprotocol/modelcontextprotocol/blob/main/docs/specification/2026-07-28/server/tools.mdx | MCP tool discovery and invocation semantics; review current specification version and security guidance. |
-| NIST FIPS 204 — ML-DSA | https://csrc.nist.gov/pubs/fips/204/final | Official standard for post-quantum digital signatures. |
-| NIST FIPS 203 — ML-KEM | https://csrc.nist.gov/pubs/fips/203/final | Official standard for post-quantum key encapsulation. |
-| NIST post-quantum standards overview | https://www.nist.gov/pqc | Broader standards and transition guidance. |
-
-Use QoreChain's official `@qorechain/pqc` and protocol-compatible helpers for implementation. Do not create a modified ML-DSA or ML-KEM implementation.
-
----
-
-## 9. Suggested research questions for the coding agent
-
-The agent should go beyond this list, but these are useful starting questions:
-
-1. What is the exact return-data encoding of `executeCrossVMCall` on the current Diana version? Verify via a minimal transaction and the latest QoreChain source.
-2. What is the exact `pqcVerify` ABI and how are message digest, public key and signature bytes passed? What is the gas requirement?
-3. Which EVM authorization-window settings are required for a contract to invoke `0x0901` under the latest network version?
-4. What is the currently live allowlist and code pin list? Do not use an old list.
-5. Can a custom CosmWasm contract be stored, instantiated, and allowlisted within the time and governance constraints? What exact deposit and vote process is live?
-6. What Native caller identity does the EVM precompile present to CosmWasm (`info.sender`)? Verify experimentally and use it in access control.
-7. Can a single Native quota state machine support atomic reserve/finalize/cancel while remaining within gas/message limits?
-8. What are the reentrancy and nested execution semantics of the EVM bridge? Use the current QoreChain core source and testnet.
-9. How should the provider's receipt be domain-bound to chain, contract, capability, job, provider, tool-version hash, usage, and price?
-10. What are the failure and timeout economics? Failed synchronous calls still consume gas; design tests and user messaging accordingly.
-11. Does using a custom Native quota contract provide a real multi-provider/shared-state advantage over an EVM-only contract? If not, challenge the product thesis rather than adding an unnecessary VM call.
-12. What would be required to support multiple parallel reservations without overspending or deadlocking a capability?
-
----
-
-## 10. How to cite and credit these sources
-
-- Credit QoreChain Workshop 3, SDKs, starter code, packages, and any templates used.
-- Credit AgentFabric, Harness, Kagi Wallet, Signel, allowance.eth, AgentGate, and other studied projects in internal research notes and product differentiation documents. Do not imply endorsement or affiliation.
-- Verify the license of any code imported from a third-party repository. Do not copy code from a project with an incompatible or unclear license.
-- Keep a research log with exact commits/tags and the date checked.
-- Re-check QoreChain network status and the hackathon rules before final submission because network/governance state and event rules may change.
+Never invent an API, precompile, contract address, ABI, message type, query route, or governance result. If a capability remains unknown, label it `NOT VERIFIED` and stop work that depends on it.

@@ -1,1179 +1,955 @@
-# ChronoQuota
+# QoreLease
 
-## Cross-VM capability control, usage metering, and settlement for autonomous software
+> **Agentic capacity reservation and verified service settlement on QoreChain.**
+>
+> QoreLease is a proposed protocol for reserving measurable API / AI-inference capacity from service providers. QoreChain Native is intended to own provider-side commitments and capacity state; the EVM is intended to hold buyer-side fUSD escrow and settle verified delivery. The design is conditional on the Native-runtime feasibility checks in this document.
 
-> **Working thesis:** An AI agent should be able to use paid APIs, MCP tools, and compute services autonomously without receiving unrestricted credentials or treasury access. ChronoQuota gives the agent a narrow, time-bound capability; lets providers verify and reserve that capability; and coordinates usage authorization with payment settlement across QoreChain EVM and QoreChain Native in one atomic transaction.
-
-**Hackathon category:** QoreChain Build Before Q-Day — Advanced / Cross-VM  
-**Network target:** QoreChain Diana testnet (`qorechain-diana`, EVM chain ID `9800`)  
-**Project status:** Product and architecture specification; implementation must begin with the validation gates in this README.  
-**Research snapshot:** 23 November 2026. Live network parameters can change; re-check them before each deployment.
-
----
-
-## 1. Executive summary
-
-ChronoQuota is not another AI agent, chatbot, wallet, or generic x402 payment gateway. It is an **authorization and settlement layer for software agents that consume paid services**.
-
-A company may run a research agent that uses market-data APIs, a web-search MCP tool, document extraction, and GPU inference. The company wants the agent to work without asking for permission on every request, but it cannot give the agent an unrestricted API key or the treasury's primary private key.
-
-The company therefore creates a capability such as:
-
-- This agent may call `market.search` and `web.extract`.
-- Only these provider identities and tool versions are allowed.
-- The capability permits 10 units of usage in total.
-- Each job may cost at most 0.50 DemoUSD.
-- Total spending may not exceed 5.00 DemoUSD.
-- The capability expires at a specified QoreChain block height.
-- A job ID can be reserved and settled only once.
-- The owner may revoke the capability.
-
-The AI can propose which tool to use, but **AI output never decides whether a transaction is authorized**. A deterministic policy check and the on-chain contracts decide that.
-
-ChronoQuota separates the system into two coordinated execution responsibilities:
-
-| QoreChain EVM | QoreChain Native (CosmWasm) |
-|---|---|
-| Holds the demo payment escrow. | Maintains the canonical capability quota and reservation state. |
-| Checks the owner's policy, quote, signatures, amount, nonce, and job state. | Checks capability status, expiry, allowed provider/tool identifiers, available quota, duplicate job IDs, and reservation state. |
-| Pays a provider or releases a reservation. | Reserves, consumes, releases, or revokes usage capacity. |
-| Emits EVM events and stores settlement identifiers. | Stores Native capability/job state and queryable execution records. |
-
-A synchronous EVM-to-Native call through QoreChain's Cross-VM bridge coordinates the two sides. If Native refuses a reservation or settlement, the EVM transaction reverts. If EVM fails after the Native state update, the Native update must roll back with it. This atomicity must be proven on Diana testnet, not assumed from a local mock.
-
-### One-sentence differentiator
-
-**Where agent-wallet winners constrain what a key can sign, ChronoQuota coordinates a service capability, a usage reservation, a signed service receipt, and payment settlement across EVM and Native state—with the two on-chain state transitions committed or reverted together.**
+**Project status:** Architecture specification / pre-implementation  
+**Target network:** QoreChain Diana testnet (`qorechain-diana`, EVM chain ID `9800`)  
+**Target hackathon category:** Cross-VM  
+**Primary implementation document:** This README  
+**Technical source index:** [`docs/SOURCE_REFERENCE.md`](docs/SOURCE_REFERENCE.md)
 
 ---
 
-## 2. The problem
+## 0. Instructions for the coding agent — read first
 
-### 2.1 The current unsafe choices
+This repository starts as a specification, not as an invitation to immediately generate the entire application.
 
-Developers integrating AI agents with paid services commonly face a bad trade-off:
+1. Read this README completely and then read [`docs/SOURCE_REFERENCE.md`](docs/SOURCE_REFERENCE.md).
+2. Treat the **feasibility gates** in §4 as blocking. Do not build the marketplace, dashboard, AI agents, or full protocol before the gates pass.
+3. Do not assume a standard CosmWasm feature is enabled by QoreChain merely because it exists in `cosmwasm-std`. In particular, `StakingQuery::AllDelegations` is a mandatory test, not an established QoreChain capability.
+4. Do not describe the project as trustless proof of physical GPU ownership or AI-answer correctness. It can enforce declared capacity and settle based on independently measured service-level evidence.
+5. Re-read the live Diana testnet parameters before every deployment or cross-VM integration test. Network status, allowlists, circuit breakers, gas limits, and governance parameters can change.
+6. Use the official QoreChain Workshop 3 `02-cross-vm` example as a baseline for the bridge mechanics. Do not copy its receipt-book product logic and call that the QoreLease implementation.
+7. Any implementation decision that changes a runtime boundary, trust assumption, state transition, or security property must be recorded in an ADR under `docs/decisions/`.
+8. Keep on-chain state authoritative. A database, event indexer, provider API, or agent may cache data, but must not be treated as the source of truth for reservations, bonds, escrow, or settlement.
+9. Never invent deployed contract addresses, token addresses, RPC endpoints, precompile availability, governance approval, or successful test results. Record the actual values and transaction hashes in deployment evidence.
+10. If a required capability cannot be demonstrated, stop and report the failure with evidence. Do not silently replace an on-chain property with a trusted backend or an oracle and continue claiming the same guarantee.
 
-1. **No autonomy:** A human approves every API call or transaction. This makes agents slow and expensive to operate.
-2. **Excessive authority:** An agent receives a long-lived API key, a wallet private key, or a broad session key. A prompt injection, tool compromise, bug, or runaway loop can misuse the authority.
-3. **Disconnected quotas:** One service provider tracks API usage in its own database, another tracks payments separately, and the treasury tracks spending in a third place. These records can disagree, be stale, or be controlled by a single party.
-4. **Payment before authorization is fully checked:** A service can be paid even when the associated usage should have been denied, or a service can do work before there is a reliable payment/usage reservation.
-5. **Weak auditability:** A wallet transaction may show a payment but not which agent, tool version, job, policy, usage receipt, and service result it was associated with.
-
-### 2.2 The precise problem statement
-
-> **How can an organization delegate narrowly scoped, time-bound, metered authority to autonomous agents so they can consume paid external services without exposing treasury credentials, exceeding a quota, reusing a job authorization, or creating inconsistent authorization and payment records across execution systems?**
-
-### 2.3 Who experiences this problem?
-
-**Primary customers**
-
-- Developers and companies operating autonomous agents.
-- Providers of paid APIs, MCP tools, data feeds, and compute services.
-- Agent platforms that need tenant-level budgets, service allowlists, and an auditable usage trail.
-
-**Initial user personas**
-
-- **Agent owner / treasury administrator:** Creates capabilities, funds escrow, selects limits, and revokes access.
-- **Agent runtime:** Discovers permitted tools, requests quotes, and asks for reservations. It never receives the owner's primary private key.
-- **Service provider:** Publishes a priced API/MCP tool, checks an authorization reservation, performs the service, and submits a signed usage receipt.
-- **Auditor / developer:** Inspects the EVM settlement and Native capability state and checks that their invariants match.
-
-### 2.4 When blockchain is useful—and when it is not
-
-A single company with one agent and one trusted API provider may be better served by a conventional database and billing service. ChronoQuota is aimed at **multi-party service ecosystems** where agent owners, agent runtimes, and providers need to verify shared authorization and settlement state without depending on one provider's private database.
-
-QoreChain Native is intended to expose a shared, queryable Native capability state to Native/Cosmos-aware services, while EVM handles EVM-compatible escrow and settlement. The Cross-VM call keeps the state transition coordinated. This must provide a concrete advantage in the product; do not add a Native call merely to satisfy a checklist.
+**First deliverable from the coding agent:** a short feasibility report with reproducible tests and a Go / No-Go recommendation. No product UI is required for that deliverable.
 
 ---
 
-## 3. Product definition
+## 1. Product thesis
 
-### 3.1 What ChronoQuota is
+AI systems and software agents increasingly consume external services: inference APIs, document-processing APIs, embedding endpoints, model-serving APIs, and other metered services. A buyer may need a guaranteed amount of service capacity during a specific time window, with measurable delivery conditions.
 
-ChronoQuota is a **capability control plane plus metered settlement protocol**. The dashboard is the user interface; the agent/MCP integration is the client interface; the contracts are the deterministic enforcement layer.
+Today, a buyer can pay for a service without having an enforceable on-chain reservation of provider-declared capacity. A provider can also overcommit the same capacity across different applications, while a buyer may have limited recourse when the agreed service level is not met.
 
-It is composed of:
+QoreLease aims to provide a shared commitment and settlement layer:
 
-1. **Capability Studio:** The owner defines service permissions, usage limits, price limits, expiry, and revocation rules.
-2. **Policy Preview / Simulator:** Shows what would be allowed or denied, why, and the maximum financial exposure before the owner signs.
-3. **EVM Escrow Vault:** Holds demo payment tokens and enforces financial limits.
-4. **Native Capability Engine:** Maintains the canonical capability, quota, and job reservation state in CosmWasm.
-5. **Agent SDK / MCP Server:** Lets an agent discover allowed tools, request quotes, reserve usage, and submit execution requests.
-6. **Provider Gateway:** Exposes paid tools, returns quotes, checks confirmed reservations, performs work, and signs a result/usage receipt.
-7. **Cross-VM Invariant Monitor:** Reads EVM and Native state and shows whether usage, reservations, payment, and receipts agree.
+- Providers publish bounded service capacity for a defined time window.
+- Buyers reserve capacity against an explicit service agreement.
+- The provider's commitment is recorded in a shared Native contract.
+- Buyer funds are locked in an EVM escrow in the same transaction that reserves capacity.
+- A provider adapter executes the workload only after checking the Native reservation.
+- Independent monitors produce signed, measurable delivery reports.
+- Settlement, refund, and collateral outcomes follow deterministic contract rules.
 
-### 3.2 What ChronoQuota is not
+### Example use case
 
-- It is not a general-purpose AI agent or LLM platform.
-- It is not a new blockchain, bridge, or rollup.
-- It is not a custodial wallet that stores user seed phrases.
-- It is not a generic API marketplace for the MVP.
-- It does not claim that a provider's signed receipt proves the quality or truth of off-chain computation. It proves that the provider submitted a signed statement; stronger proof requires additional verification such as TEE attestations, reproducible execution, or a dispute mechanism.
-- It does not claim that a blockchain rollback can undo an external API call. A provider must wait for a confirmed reservation before doing billable work.
+A buyer agent needs **70 document-extraction requests** from 10:00–10:15. It requires at least 98% successful responses, a p95 latency below 800 ms, and a maximum spend of 20 fUSD.
 
-### 3.3 Product promise
+Provider A has published one 100-unit capacity slot for that window. Buyer A reserves 70 units. A second buyer then attempts to reserve 50 units from the same slot. The second reservation must fail because only 30 units remain. The second buyer's EVM escrow transfer must roll back with the rejected Native reservation.
 
-**Autonomy within a capability, not autonomy over the treasury.**
+The provider runs the 70 requests. Independent monitors measure the agreed service-level metrics. The EVM contract then settles the payment, while the Native contract consumes the reservation and releases or penalizes the provider's application-level bond according to the agreement.
 
-The owner authorizes the capability once. The agent can operate without repetitive human approvals while the deterministic policy remains in force. If the request is outside scope, expired, over budget, duplicated, revoked, or unsupported, the system denies it.
+The numbers above are example demo parameters, not fixed protocol constants.
 
----
+### Product positioning
 
-## 4. How it works — simple end-to-end example
+QoreLease is **not** intended to be another general-purpose GPU marketplace, sealed-bid auction, agent-task marketplace, or generic escrow contract. The MVP is a capacity-commitment and service-delivery settlement layer for API / inference providers.
 
-A company funds its ChronoQuota vault with 5.00 DemoUSD and creates a capability for its `ResearchAgent`:
-
-- Allowed provider: `DataProvider-A`.
-- Allowed tool: `market.search`.
-- Allowed tool version: a fixed tool-schema/version hash.
-- Total usage: 10 units.
-- Per-job maximum: 1 unit.
-- Maximum price per job: 0.50 DemoUSD.
-- Maximum total spend: 5.00 DemoUSD.
-- Expiry: a specified QoreChain block height.
-
-The agent asks for market data. The provider returns a quote. ChronoQuota checks the capability and reserves the required units and funds. Only after the reservation transaction is confirmed does the provider perform the work. The provider then signs a receipt containing the job ID, tool version, input commitment, output digest, usage amount, and final price. ChronoQuota verifies the receipt, finalizes the Native usage state, and releases the payment from escrow.
-
-If the agent tries to call a disallowed tool or exceed the quota, the Native capability engine rejects the operation and the EVM transaction reverts. If EVM settlement fails after the Native update, the Native update must also revert.
+An AI agent may help discover providers, compare offers, and prepare requests. It is not trusted to decide whether a provider has fulfilled an SLA. Contract rules and independent measured evidence determine settlement.
 
 ---
 
-## 5. Key product capabilities
+## 2. Why use Cross-VM?
 
-### 5.1 Capability Passport
+This question must have a technically defensible answer. A capacity mapping, escrow, signature verification, and payment settlement could all be implemented in Solidity. Merely moving a mapping from Solidity to CosmWasm does **not** justify Cross-VM.
 
-Every authorization has a unique, versioned `capabilityId`. Its policy is bound to:
+### Intended runtime boundary
 
-- Owner / tenant.
-- Agent identity (EVM and/or Native address binding).
-- Permitted provider IDs.
-- Permitted tool IDs and tool-version/schema hashes.
-- Permitted actions or action-schema hashes.
-- Maximum usage units per job.
-- Maximum total usage units.
-- Maximum price per job.
-- Maximum total spend.
-- Optional usage window and maximum parallel jobs.
-- Valid-from and expiry block heights.
-- Policy version and revocation state.
-
-The capability is not a private key. It is a constrained authorization record.
-
-### 5.2 Policy compiler with human approval
-
-The user may describe a policy in plain English, for example:
-
-> Let the research agent use DataProvider-A's market search tool up to 10 times. Each request must cost no more than 0.50 DemoUSD. Stop at block height H.
-
-An LLM may convert this into a proposed structured policy. The interface must display the normalized policy and financial exposure. The owner explicitly reviews and signs it. The LLM is never trusted to enforce the policy and cannot silently broaden permissions.
-
-MVP: A form that produces a validated JSON policy is sufficient. Natural-language compilation is a stretch feature.
-
-### 5.3 Preflight simulation and explainable denials
-
-Before signing a capability or submitting a job, show:
-
-- Whether the policy would allow the request.
-- Which exact rule allowed or denied it.
-- Remaining units and remaining spend.
-- Maximum possible exposure.
-- Whether the request uses a new or already-seen job ID.
-- Whether the policy, tool version, or quote has changed.
-
-This is a UX feature. The final decision remains enforced by contracts.
-
-### 5.4 Reserve-before-work execution
-
-The provider must not start billable work just because an agent has read a quota value from a REST endpoint. Two agents could race against the same remaining quota.
-
-Instead:
-
-1. The provider returns a quote with a unique `quoteId`, provider ID, tool ID/version hash, maximum charge, and expiry.
-2. The agent submits a reservation request.
-3. EVM verifies the owner-approved policy and locks the maximum charge in escrow.
-4. EVM calls Native synchronously to reserve units against the capability and job ID.
-5. Both state changes commit or both revert.
-6. The provider verifies the confirmed reservation and only then performs the job.
-
-### 5.5 Signed service receipt
-
-After performing the job, the provider submits a receipt containing at least:
-
-- `capabilityId`
-- `jobId`
-- `quoteId`
-- `providerId`
-- `toolId` and `toolVersionHash`
-- `requestHash` or privacy-preserving input commitment
-- `outputHash`
-- `unitsConsumed`
-- `finalPrice`
-- `providerNonce`
-- `issuedAt` / expiry information
-
-The receipt signature must cover a domain-separated digest containing the chain ID and ChronoQuota contract address. This prevents cross-chain, cross-contract, and cross-job replay.
-
-MVP may use a well-defined EVM signature scheme for provider receipts. A post-quantum ML-DSA-87 provider-receipt verification path is a high-value extension only after the current QoreChain `pqcVerify` ABI and gas requirements are confirmed with a working test. Do not claim that ordinary EVM transactions themselves carry an ML-DSA signature: QoreChain uses a registered PQC key and an EVM authorization window to admit ordinary EVM transactions.
-
-### 5.6 Cross-VM invariant monitor
-
-The dashboard displays both lanes side by side:
-
-- EVM capability/escrow state.
-- Native capability/quota/reservation state.
-- Job state and receipt digest.
-- Paid amount and released amount.
-- Last successful Cross-VM transaction.
-- Whether the expected invariants currently match.
-
-The monitor reads Native state through the Native REST smart-query endpoint and EVM state through JSON-RPC. Do not try to use `STATICCALL` through the Cross-VM bridge to read a mutating Native contract. Native query and EVM query are separate read paths.
-
-### 5.7 Emergency revocation and provider isolation
-
-The owner can revoke a capability. New reservations must be denied. Provider IDs and tool-version hashes are pinned into the capability so that an agent cannot swap a permitted tool for an unreviewed replacement.
-
-Pending reservations need explicit lifecycle rules. The MVP should use short reservation expiries and support deterministic cancellation/timeout. Do not claim that revocation can undo work a provider has already performed.
-
----
-
-## 6. What is genuinely new compared with existing agent-payment winners?
-
-This project is inspired by successful systems, but it must not copy their code or simply repackage their features.
-
-| Existing winner / pattern | What it already demonstrates | ChronoQuota's intended extension |
+| Responsibility | Runtime | Reason for placement |
 |---|---|---|
-| **AgentFabric** — Cronos x402 PayTech Hackathon, 1st place | Scoped session keys, smart-account workflows, x402 API proxies, MCP integration, and bounded agent execution on Cronos EVM. | Make the capability quota and reservation lifecycle a Native state machine; atomically coordinate Native usage reservation/finalization with EVM escrow/payment; provide a dual-VM invariant monitor. |
-| **Harness** — ETHOnline 2026, Ledger AI Agents x Ledger 1st | Isolated agent containers, identities, and owner-defined spending limits. | Focus on service-level capabilities, reservations, usage receipts, and two-lane settlement rather than container isolation. |
-| **Kagi Wallet** — ETHGlobal Tokyo 2026, Intercepta 1st | Threshold wallet authority and capped/expiring delegated agent keys. | Complement delegated keys with service/tool-specific quotas and provider-side reservations; do not claim to replace hardware threshold signing. |
-| **Signel** — ETHGlobal Cannes 2026, Ledger AI Agents x Ledger 1st | On-chain contract/function/amount restrictions for delegated agents. | Add provider identity, tool-version binding, usage metering, reservation/finalization, and Native/EVM atomic state coordination. |
-| **allowance.eth** — ETHGlobal New York 2026, ENS award | Human-readable policies anchored to agent identity and enforced by contract rules. | Add a cross-runtime capability state machine and service-provider execution receipts. |
-| **AgentGate** — ETHGlobal Cannes 2026, World AgentKit 1st | Provider-facing pay-per-call API gateway and x402 service access. | Add organization-owned capabilities, Native-side quotas, reservation before work, and atomic payment/usage finalization. |
+| Provider registration and provider-side service profile | Native / CosmWasm | Provider-side registry and native-lane operations |
+| Provider capacity slots and reservation state | Native / CosmWasm | Shared canonical provider inventory consumed by EVM procurement applications and provider-side Native clients |
+| Provider application-level QOR bond | Native / CosmWasm | Native token custody and provider-side bond lifecycle; must be tested in the synchronous bridge path |
+| Native staking eligibility check | Native / CosmWasm | Potential use of the Cosmos staking module from the Native runtime; **not yet proven available to CosmWasm contracts on QoreChain** |
+| Buyer fUSD escrow | EVM / Solidity | Buyer-side financial contract and ERC-20 flow |
+| Signed service-evidence verification and payout rules | EVM / Solidity | Buyer-side settlement logic |
+| Cross-runtime transaction coordination | EVM → Native synchronous bridge | Reserve Native capacity in the same transaction as EVM escrow |
+| Actual inference / API processing | Off-chain provider infrastructure | Workload execution must not run inside the contracts |
 
-### Our defensible thesis
+### What is confirmed by QoreChain documentation
 
-The novelty is **not** “AI agent + API + crypto payment.” Those pieces already exist.
+- QoreChain runs EVM and QoreChain Native (CosmWasm) as separate runtimes on one chain.
+- The Diana testnet documents an EVM-to-Native synchronous bridge at `0x0000000000000000000000000000000000000901`, with a target allowlist.
+- The bridge is designed to execute the Native contract in the same transaction; a later EVM revert is intended to undo the Native-side state change.
+- The bridge call identifies the calling EVM account or contract to the Native contract using its QoreChain Native (`qor1...`) address mapping.
+- The Native-development guide demonstrates `BankMsg::Send` and `StakingMsg::Delegate` for interacting with Cosmos SDK modules.
+- The EVM precompile reference currently reports the Cross-VM bridge inactive on mainnet and active with an allowlist on Diana testnet. This must be checked live before use.
 
-The intended differentiator is the **capability lifecycle across two QoreChain execution environments**:
+### What is not yet confirmed
 
-1. EVM holds and accounts for payment.
-2. Native holds the canonical service capability and quota lifecycle.
-3. Native reservation/consumption and EVM financial state are committed atomically.
-4. Provider receipts bind service usage to the capability and job.
-5. The dashboard independently reads both lanes to demonstrate the invariant.
+The standard CosmWasm library defines `StakingQuery::AllDelegations`, but the QoreChain Native guide demonstrates staking **messages**, not that a custom CosmWasm contract can query arbitrary provider delegations through `StakingQuery`.
 
-This is a technical hypothesis to prove, not a claim that no other project anywhere has ever built a similar system.
+Therefore, the protocol must not claim Native staking eligibility enforcement until a test contract proves all of the following:
+
+1. QoreChain's deployed CosmWasm runtime accepts the staking query type.
+2. The query returns the expected delegations for a provider's `qor1...` address.
+3. The amount and denomination semantics are understood and match the intended admission rule.
+4. The query works in the Native contract execution context used by the synchronous EVM-to-Native bridge, not only in a normal Native transaction.
+5. The returned eligibility result is checked on-chain inside the reservation path; it is not supplied by a trusted backend.
+
+**Do not infer runtime support from the fact that `StakingQuery` exists in CosmWasm source code.** Standard-library support and chain runtime support are separate questions.
+
+### Cross-VM go/no-go rule
+
+The project proceeds as a Cross-VM application only if the feasibility work demonstrates a real Native-specific responsibility and the synchronous bridge actually enforces it atomically with EVM escrow.
+
+The strongest intended Native-specific responsibility is an on-chain provider admission rule based on Native staking state, combined with Native-side capacity commitments. If the staking query is unavailable, do not quietly replace it with a backend-signed statement and claim that the Native contract verifies stake. Reassess the product and the category fit before building the rest.
+
+A shared Native capacity ledger alone may be useful, but Solidity could also own one. The team must be prepared to explain why provider-side Native transactions and Native module integration are essential to the actual product rather than merely convenient implementation choices.
 
 ---
 
-## 7. QoreChain architecture and current constraints
+## 3. Scope
 
-### 7.1 Network target
+### MVP must include
 
-Use QoreChain Diana testnet only for this project:
+1. A Native provider registry.
+2. A Native provider admission/eligibility rule, subject to the feasibility gate.
+3. A Native application-level QOR service bond, separate from delegated staking.
+4. Native service-capacity slot publication and reservation accounting.
+5. One EVM escrow contract that accepts buyer fUSD and invokes the Native reservation.
+6. Atomic rollback tests in both directions: Native failure reverts EVM escrow; later EVM failure reverts Native state.
+7. A provider adapter that checks the Native reservation before starting work.
+8. A small, real API or inference workload with measurable service-level metrics.
+9. At least two independent monitor processes or monitor identities that produce signed evidence.
+10. A settlement path that pays, refunds, or penalizes according to deterministic rules.
+11. A testnet demo with transaction hashes, addresses, test records, and reproducible steps.
 
-| Item | Value |
+### Explicitly out of scope for the first MVP
+
+- Building a GPU cloud or operating physical GPU infrastructure.
+- Running LLM inference, arbitrary AI logic, or heavy computation on-chain.
+- Proving the semantic correctness of arbitrary AI-generated answers.
+- Claiming cryptographic proof that the provider owns physical hardware.
+- A general-purpose agent marketplace.
+- A general-purpose sealed-bid auction as the main innovation.
+- A native token launch or complex tokenomics.
+- A multi-chain deployment.
+- A full enterprise dispute-resolution system.
+- A production-grade decentralized monitor network. The MVP can demonstrate a small independent monitor quorum, while clearly documenting its trust assumptions.
+
+### MVP service vertical
+
+Start with one measurable service class: **document extraction / structured inference API capacity**.
+
+Use a fixed workload and an agreed response schema. The contract should verify service-level facts such as request count, success rate, latency bounds, time window, and report authenticity. It must not claim to prove that the model's extracted answer is semantically correct unless a separate adjudication system is designed and validated.
+
+---
+
+## 4. Mandatory feasibility gates — do these before product implementation
+
+The project is not approved for full implementation until the following tests have evidence.
+
+### Gate G0-A — Does QoreChain expose staking queries to CosmWasm contracts?
+
+Build a minimal `staking-probe` Native contract. It should accept a provider address, attempt the standard `StakingQuery::AllDelegations` / `query_all_delegations` path, aggregate the returned `uqor` delegations using checked integer arithmetic, and persist the result for inspection.
+
+Test at least:
+
+- A provider with no delegations.
+- A provider with one delegation.
+- A provider with more than one delegation.
+- A provider with an unbonding entry, to understand whether unbonding is included or excluded.
+- A provider address that is malformed or not found.
+- Denomination handling (`uqor`) and amount conversion.
+
+**Pass condition:** the deployed QoreChain Native contract itself can query the provider's relevant staking state and use it in an on-chain allow/deny decision.
+
+**Fail condition:** the runtime rejects the query, the query only works off-chain, or the contract receives an incomplete value that cannot support the intended rule.
+
+If G0-A fails, do not use an off-chain API result as if it were a trustless on-chain staking check. Stop and reconsider the product's Cross-VM justification.
+
+### Gate G0-B — Can a bridge-invoked Native contract execute required Native module messages?
+
+Test whether a Native contract invoked by the EVM precompile can safely execute the specific Cosmos SDK message effects the design needs, including `BankMsg::Send` for an application-level bond release/penalty.
+
+Test:
+
+1. Native bond release succeeds and changes the expected balances.
+2. Native bond penalty succeeds and changes the expected balances.
+3. Native module-message failure reverts the entire enclosing cross-VM transaction.
+4. A later EVM revert rolls back both the Native contract's storage changes and the Native module-message effects.
+
+Do not assume that a normal Native transaction test proves these cross-VM execution semantics.
+
+### Gate G0-C — Cross-VM sender identity and authorization
+
+Prove that the Native contract sees the expected caller identity for a Solidity escrow contract. QoreChain documents the EVM caller/contract as the Native sender through its `qor1...` address mapping. Verify the mapping for the deployed escrow contract and whitelist only that identity for reservation/finalization calls.
+
+Also verify the account's EVM authorization window and the `0x0901` scope required for the actual transaction path. Do not guess which addresses must be included in `allowed_targets`; inspect the live window rules and run a real test.
+
+### Gate G0-D — Cross-VM atomicity
+
+Use a minimal Solidity caller and a Native test contract. Demonstrate all of these on Diana testnet or a technically equivalent local QoreChain environment, then repeat on testnet before claiming completion:
+
+| Test | Expected result |
 |---|---|
-| Cosmos chain ID | `qorechain-diana` |
-| EVM chain ID | `9800` |
-| EVM JSON-RPC | `https://evm-testnet.qore.host` |
-| Native REST | `https://api-testnet.qore.host` |
-| Consensus RPC | `https://rpc-testnet.qore.host` |
-| Cross-VM bridge precompile | `0x0000000000000000000000000000000000000901` |
-| Native target VM identifier | `1` |
+| Native call succeeds, EVM call succeeds | Both EVM and Native state changes persist |
+| Native contract rejects reservation | EVM escrow transfer and EVM state changes revert |
+| Native call succeeds, Solidity deliberately reverts afterward | Native state changes revert too |
+| Native response is empty or malformed | Solidity fails closed; no payment or reservation is treated as successful |
+| Bridge inactive / target not allowlisted | Transaction is not mistaken for a successful reservation |
 
-The official governance-proposal guide says Diana has run v3.2.9 since 20 November 2026. Some Cross-VM reference pages are labelled v3.2.8 and may not yet reflect all later network changes. Treat documentation version labels as a warning to verify live parameters, not as permission to assume a state.
+The precompile can return empty data when it is not active. A Solidity low-level call returning `ok == true` is therefore not sufficient. Check the response and decode a documented response format.
 
-Mainnet Cross-VM is not available as the target for this hackathon implementation. The synchronous bridge is enabled on testnet, while the official Cross-VM documentation reports mainnet calls paused by the circuit breaker.
+### Gate G0-E — Governance feasibility
 
-### 7.2 Synchronous EVM-to-Native call
+Confirm that the team can get its custom Native contract stored, instantiated, and added to the Cross-VM allowlist in time. Custom Native code upload and bridge allowlisting are governance-controlled on Diana testnet.
 
-The documented bridge precompile interface is:
+Before building the full contract, confirm:
+
+- Required proposal type and message structure.
+- Current minimum deposit, voting period, quorum, yes threshold, and veto threshold.
+- Whether a validator/community sponsor will help achieve quorum.
+- Required hybrid-signing setup and the official `qorechaind` binary.
+- Contract code checksum and no-admin / code-pin approach.
+- Whether the target can be approved and pinned before the demo deadline.
+
+Do not treat a proposal submission as approval. Record the proposal ID and final status.
+
+### Gate report template
+
+Create `docs/FEASIBILITY_SPIKES.md` and record each gate using this structure:
+
+```text
+Gate ID:
+Question:
+Chain / release / block height:
+Contract source commit:
+Wasm checksum / code ID / contract address:
+Test accounts (public test addresses only):
+Exact commands / transaction hashes:
+Expected result:
+Observed result:
+Logs / query output:
+Pass or fail:
+Unresolved risks:
+Decision / next step:
+```
+
+---
+
+## 5. System architecture
+
+```text
+                       OFF-CHAIN LAYER
+  ┌──────────────────────────────────────────────────────────────┐
+  │                                                              │
+  │  Buyer agent       Provider adapter          Monitor nodes   │
+  │  - discover        - query Native slot       - run probes    │
+  │  - rank offers     - verify reservation      - measure SLA   │
+  │  - prepare request- execute API workload     - sign reports  │
+  │                                                              │
+  └──────────────┬─────────────────┬────────────────────┬────────┘
+                 │                 │                    │
+                 │                 │                    │
+          ┌──────▼──────┐   ┌──────▼──────────┐  ┌──────▼─────────┐
+          │ Next.js UI  │   │ Native queries  │  │ EVM evidence   │
+          │ / client    │   │ / Native txs     │  │ submission     │
+          └──────┬──────┘   └──────┬──────────┘  └──────┬─────────┘
+                 │                 │                    │
+  ═══════════════╪═════════════════╪════════════════════╪════════════
+                 │                 │                    │
+                 │          QORECHAIN DIANA TESTNET      │
+                 │                                      │
+          ┌──────▼──────────────────────────────────────▼──────┐
+          │                     EVM                             │
+          │                                                     │
+          │  QoreLeaseEscrow.sol                                │
+          │  - buyer fUSD escrow                                │
+          │  - offer / reservation references                   │
+          │  - report verification                              │
+          │  - payout / refund / settlement                     │
+          │                                                     │
+          └────────────────────────┬────────────────────────────┘
+                                   │
+                    synchronous EVM → Native bridge
+                            precompile 0x0901
+                                   │
+          ┌────────────────────────▼────────────────────────────┐
+          │              QORECHAIN NATIVE                       │
+          │                                                     │
+          │  QoreLeaseRegistry.rs                               │
+          │  - provider registry                                │
+          │  - eligibility gate (only after G0-A passes)        │
+          │  - liquid application-level bond                    │
+          │  - slot capacity                                   │
+          │  - reservation state machine                        │
+          │  - replay / duplicate protection                    │
+          │  - completion / release                             │
+          │                                                     │
+          └─────────────────────────────────────────────────────┘
+```
+
+### Data authority
+
+| Data | Authoritative location | Notes |
+|---|---|---|
+| Provider profile | Native contract | UI / database may index it |
+| Staking eligibility | Native contract, only if G0-A passes | Never accept a browser/backend boolean as authoritative |
+| Provider's liquid service bond | Native contract + Native bank state | Separate from delegated staking |
+| Published slot capacity | Native contract | Provider scheduler reads it |
+| Active reservations | Native contract | No off-chain-only reservation state |
+| Buyer funds | EVM escrow | Use exact ERC-20 base units |
+| SLA terms and terms hash | EVM request / Native reservation reference | Same immutable commitment must be referenced by both sides |
+| Monitor reports | EVM evidence records / event logs | Store digest and signatures; consider off-chain full report storage |
+| Execution logs | Off-chain provider/monitor services | Evidence input, not the source of financial truth |
+
+### Why the provider scheduler matters
+
+A Native registry is not meaningful if providers ignore it and schedule jobs from a private database. The provider adapter must query `query_slot` / `query_reservation` immediately before starting work. The Native registry is the provider-side source of truth for all participating QoreLease applications.
+
+This still does not stop a provider from selling the same capacity outside QoreLease. The protocol prevents overbooking only among participating applications and providers that honour the integration.
+
+---
+
+## 6. Roles and permissions
+
+### Buyer
+
+- Creates a service request with a time window, unit count, budget, and SLA terms.
+- Selects or accepts a provider offer.
+- Approves exact fUSD escrow allowance or uses a supported permit flow only if validated.
+- Submits a reservation through the EVM escrow.
+- Can inspect evidence and settlement status.
+
+### Provider
+
+- Registers a Native identity and service profile.
+- Passes the configured admission rule, if G0-A validates it.
+- Deposits a liquid Native QOR service bond.
+- Publishes and updates capacity slots.
+- Operates a provider adapter that checks Native reservation state before dispatching work.
+- Can withdraw only unlocked / unencumbered bond subject to protocol rules.
+
+### Monitor
+
+- Is registered or authorized for a monitoring role.
+- Runs a bounded, reproducible workload or probe.
+- Measures only metrics defined in the job terms.
+- Signs a canonical report digest.
+- Cannot directly choose an arbitrary payout amount.
+
+### Protocol administrator
+
+- Configures contract-level roles / parameters during MVP deployment.
+- Cannot rewrite an active job's terms or fabricate successful evidence.
+- Must use a time-delayed / clearly documented admin model where practical.
+- Must not have an undocumented emergency power to seize user funds or provider collateral.
+
+---
+
+## 7. Contract responsibilities and proposed interfaces
+
+These are proposed interfaces. The implementation agent must produce an interface specification and tests before finalizing signatures, argument layouts, or storage schemas.
+
+### 7.1 Native contract — `QoreLeaseRegistry`
+
+Proposed execute operations:
+
+| Operation | Intended caller | Purpose |
+|---|---|---|
+| `register_provider` | Provider | Register provider profile and service identity |
+| `deposit_bond` | Provider | Receive Native QOR into the contract as liquid service collateral |
+| `publish_slot` | Provider | Publish capacity for a service class and time window |
+| `update_slot` | Provider | Change only unreserved capacity / permitted metadata |
+| `reserve` | Authorized EVM escrow identity | Reserve capacity and lock the required provider bond |
+| `mark_running` | Provider adapter or authorized provider identity | Optional state transition; must not override reservation ownership |
+| `finalize` | Authorized EVM escrow identity | Consume a completed reservation and release / penalize locked bond |
+| `release` | Authorized EVM escrow identity or deterministic expiry path | Release unused capacity and unlock bond |
+| `withdraw_bond` | Provider | Withdraw only currently unlocked bond |
+| `pause_provider` | Authorized governance / admin path | Stop new reservations; do not erase active reservations |
+
+Proposed query operations:
+
+| Query | Purpose |
+|---|---|
+| `provider` | Read provider profile and current status |
+| `slot` | Read total / reserved / available capacity |
+| `reservation` | Read reservation state and linked terms hash |
+| `provider_bond` | Read total, locked, and withdrawable bond |
+| `eligibility` | Read eligibility details and last verified staking inputs, if G0-A passes |
+| `authorized_escrows` | Read authorized EVM escrow identities |
+
+### 7.2 EVM contract — `QoreLeaseEscrow`
+
+Proposed public operations:
+
+| Operation | Intended caller | Purpose |
+|---|---|---|
+| `createRequest` | Buyer | Publish buyer requirements / immutable terms hash |
+| `acceptOffer` | Buyer | Pull buyer fUSD into escrow and synchronously reserve Native capacity |
+| `submitEvidence` | Authorized monitor | Submit signed service report digest and metrics |
+| `settle` | Permissionless after valid evidence / deadline | Verify evidence and execute the agreed settlement |
+| `refund` | Buyer / permissionless after defined failure | Refund according to the job state and timeout rules |
+| `getJob` | Anyone | Read EVM job, escrow, and settlement state |
+
+The EVM contract must not trust a caller-supplied `providerBondLocked = true` flag. It must rely on a successful, correctly decoded Native response and its own recorded job state.
+
+### 7.3 Cross-VM wire format
+
+QoreChain documents the synchronous precompile as accepting:
 
 ```solidity
 executeCrossVMCall(uint8 targetVM, string targetContract, bytes payload)
 ```
 
-Expected call structure:
+For a Native target:
 
-- `targetVM = 1` for QoreChain Native / CosmWasm.
-- `targetContract` is the approved Native contract's `qor1...` Bech32 address.
-- `payload` is the Native contract's UTF-8 JSON execute message.
-- The precompile address is `0x0000000000000000000000000000000000000901`.
+- `targetVM = 1`.
+- `targetContract` is the target Native contract's `qor1...` address as a string.
+- `payload` is the UTF-8 JSON CosmWasm execute message.
+- The precompile returns the target's raw response bytes.
+- Funds cannot be attached to the EVM precompile call.
+- The documented message size cap is 65,536 bytes; re-read live parameters.
 
-The selector documented for this function is `0x3c11078c`. Confirm the ABI and return-data format against the latest docs, starter code, and a live test before finalizing the adapter.
+The implementation must define and document a versioned response format before wiring Solidity settlement logic to it. Do not assume the Rust `Response` data encoding is automatically ABI-compatible. A successful low-level call with empty return data must be treated as failure because an inactive precompile may return empty data without executing the Native contract.
 
-**Critical safety check:** A precompile address that is inactive may return success with empty data. A low-level call must therefore require both `ok == true` and a non-empty, correctly decoded response. A non-empty response alone is not proof that the correct Native state changed; query the Native contract after the transaction.
-
-### 7.3 Atomicity requirement
-
-The Cross-VM category requires a working EVM-to-Native call to an approved Native contract and an atomicity demonstration on testnet.
-
-The minimum evidence must show:
-
-1. EVM + Native success: both expected state changes commit.
-2. Native-side failure: Native refuses; the EVM transaction and its state changes revert.
-3. EVM-side failure after Native mutation: Native state is also rolled back.
-4. Unapproved target: bridge refuses the call.
-5. Duplicate/replayed job: the second reservation/finalization is denied.
-
-A mocked bridge test is useful for fast unit tests but does not replace a real Diana testnet transaction.
-
-### 7.4 Native contract allowlist and governance
-
-The bridge can call only Native contracts in the governance-controlled `bridge_allowed_targets` allowlist, with code pins. A code address, code ID, or contract from an old report must not be assumed to remain approved.
-
-The official contract-governance guide, checked against Diana on 22 November 2026, explains how a builder can:
-
-1. Compile a CosmWasm contract reproducibly.
-2. Submit a governance proposal to store the code and optionally instantiate it.
-3. Submit a governance proposal to add the instantiated contract to the Cross-VM allowlist, pinned to its code ID and code-history length.
-4. Verify the result through live REST endpoints.
-
-The guide reports a regular proposal minimum deposit of 10 QOR and a 4-hour voting period after the required deposit is reached; an expedited proposal requires 50 QOR and a higher yes threshold. Re-check live governance parameters. **Governance approval is not guaranteed.**
-
-Preferred route: create a small, purpose-built `cw-chronoquota` contract and pursue governance approval early. The Native contract should be immutable after deployment (no admin/migration path unless a narrowly justified governance-controlled process is documented).
-
-Fallback route: use an already approved Native contract only after checking its live address, code pin, execute schema, query schema, and actual semantics. The currently documented `qday-receipts` contract is a receipt book, not a quota engine. A receipt-only fallback may prove Cross-VM integration, but it must not be represented as Native-enforced quota logic.
-
-### 7.5 Known existing Native contract: qday-receipts
-
-The official Workshop 3 documentation identifies `qday-receipts` as a reviewed, allowlisted Diana testnet contract:
-
-```text
-qor1xjayq5ev55tkzpml9klxwyshr7gdrha0nurha9jhm0f0gdckksgs3gltw8
-```
-
-The workshop documents these operations:
-
-- `{"record":{"note":"..."}}` — append receipt data.
-- `{"fail":{}}` — intentionally fail, useful for demonstrating rollback.
-- Queries such as `count`, `receipt`, and `latest`.
-- Notes are limited to 140 characters and have input restrictions.
-
-It records a receipt ID, sender, note, and block height. It does **not** enforce ChronoQuota's custom capability schema, usage-unit accounting, per-tool permissions, pending reservations, or provider settlement.
-
-### 7.6 WDT CW20: treat as a candidate, not a proven policy engine
-
-Prior research identified a WDT CW20 contract at:
-
-```text
-qor14hj2tavq8fpesdwxxcu44rty3hh90vhujrvcmstl4zr3txmfvw9s93uuqt
-```
-
-This address is a **candidate from the research notes and must be verified against the live `bridge_allowed_targets` list and code pin before use**. Do not hard-code it based only on this README.
-
-The prior research proposed using CW20 `increase_allowance` / `decrease_allowance` as a Native quota. There is a critical semantic warning: upstream CW20 describes `DecreaseAllowance` as robust; decreasing by an amount greater than or equal to the current allowance clears/deletes the allowance instead of necessarily reverting. Also, an expiry stored on an allowance is not automatically a reliable rejection mechanism for every `decrease_allowance` call. Do not assume that calling `decrease_allowance` against an expired allowance will produce the required `NoAllowance` failure.
-
-Before using WDT for any enforcement claim, inspect the exact deployed code ID/source and run tests against the contract on Diana for:
-
-- `increase_allowance` with expiry;
-- query behaviour before and after expiry;
-- `decrease_allowance` before and after expiry;
-- explicit `expires` argument behaviour;
-- exact allowance exhaustion;
-- over-decrease behaviour;
-- revoked or missing allowance behaviour.
-
-**Preferred architecture:** use a dedicated `cw-chronoquota` contract with explicit expiry checks and checked quota arithmetic. Do not rely on a generic CW20 token allowance to implement semantics it was not designed to guarantee.
-
-### 7.7 EVM authorization window and PQC
-
-QoreChain's EVM account admission requires a registered ML-DSA-87 key and a live EVM authorization window opened through a hybrid-signed Native-lane message. The ordinary EVM transaction itself remains a standard EVM transaction signed with secp256k1; do not say that each EVM transaction carries an ML-DSA-87 signature.
-
-The window limits blocks, transaction count, QOR value/fees and optionally allowed targets. Follow the current official EVM authorization-window reference and Workshop 3 setup rather than copying old command flags blindly. The account's EVM nonce and Native sequence are related; open the window before reading/signing the EVM nonce.
-
-QoreChain's testnet documents these precompiles as active at the time of the research snapshot:
-
-- `0x...0901` — Cross-VM bridge.
-- `0x...0A01` — PQC signature verification.
-- `0x...0A02` — PQC key status.
-- `0x...0C01` — PRISM consensus parameters.
-
-The two AI precompiles `0x...0B01` and `0x...0B02` are documented as inactive. Every precompile must be checked against the live active-precompile parameter. An inactive precompile can return empty data without reverting.
-
-### 7.8 Native reads and observability
-
-The EVM bridge is for execution, not a Solidity `STATICCALL` query interface for Native state. Read Native smart-query state through the Native REST API. The browser may need a small server-side read-only proxy because the public REST endpoint may not provide browser CORS headers.
-
-Native events are not returned as ordinary EVM logs. Emit EVM events for EVM-facing observability and query Native state separately to verify the cross-VM result.
-
----
-
-## 8. Target architecture
-
-### 8.1 High-level system diagram
-
-```mermaid
-flowchart TD
-  OWNER[Owner / Treasury Admin] --> UI[ChronoQuota Dashboard]
-  UI --> POLICY[Policy Builder + Simulator]
-  POLICY --> VAULT[ChronoVault - EVM]
-  AGENT[AI Agent / MCP Client] --> SDK[ChronoQuota Agent SDK]
-  SDK --> GATEWAY[Provider Gateway]
-  GATEWAY --> QUOTE[Provider Quote + Tool Version]
-  SDK --> VAULT
-  VAULT --> BRIDGE[QoreChain Cross-VM Precompile 0x0901]
-  BRIDGE --> NATIVE[cw-chronoquota - Native CosmWasm]
-  VAULT --> ESCROW[DemoUSD Escrow]
-  GATEWAY --> WORK[External API / MCP Tool / Compute]
-  WORK --> RECEIPT[Provider-Signed Usage Receipt]
-  RECEIPT --> VAULT
-  VAULT --> BRIDGE
-  NATIVE --> REST[Native REST Smart Query]
-  VAULT --> RPC[EVM JSON-RPC]
-  REST --> MONITOR[Cross-VM Invariant Monitor]
-  RPC --> MONITOR
-  MONITOR --> UI
-```
-
-### 8.2 EVM contracts
-
-**`ChronoFactory.sol` (optional for MVP)**
-
-- Deploys or registers owner-specific vault instances if separation is required.
-- Must not be added merely for architecture decoration. A single `ChronoVault` with owner-separated state may be simpler for the first demo.
-
-**`ChronoVault.sol` (core)**
-
-Responsibilities:
-
-- Maintain owner permissions and capability metadata needed for EVM-side checks.
-- Hold DemoUSD escrow.
-- Store job state and unique job IDs.
-- Validate quotes, price caps, owner approval, provider identity, tool/version hash, nonces, and expiry.
-- Call the Native contract through the Cross-VM precompile.
-- Reserve funds, settle provider payments, and release unused reservations.
-- Emit clear EVM events for capability and job transitions.
-- Revert if the bridge is inactive, refuses the call, returns unexpected data, or Native state transition fails.
-
-**`CrossVMAdapter.sol` / library**
-
-- Encapsulate bridge address, target VM, approved Native address, JSON encoding, low-level call handling, response parsing, and revert reasons.
-- Reject empty response data.
-- Keep all dynamic payload construction safe and deterministic.
-- Do not silently fall back to mock/local success when the bridge fails.
-
-**`DemoUSD.sol`**
-
-- A local/testnet ERC-20 mock token with a fixed 6-decimal representation for the demonstration.
-- Do not label a locally deployed mock as USDC or a real stablecoin.
-- Do not hard-code an undocumented fUSD token address.
-
-### 8.3 Native CosmWasm contract: `cw-chronoquota`
-
-The preferred Native contract should be a small deterministic state machine, not a general workflow engine.
-
-**Core state**
-
-- Authorized EVM caller(s), based on the Native caller identity observed by the bridge.
-- Capability records keyed by `(EVM caller namespace, capabilityId)`.
-- Capability policy hashes and allowed provider/tool/version hashes.
-- Total units, used units, reserved units, per-job maximum, valid-from height, expiry height, and active/revoked status.
-- Job records keyed by a unique `jobId` with states such as `Reserved`, `Settled`, `Cancelled`, and `Expired`.
-- Provider receipt digest and final usage data after settlement.
-
-**Core execute operations (conceptual; define exact Rust schema during implementation)**
-
-- `register_capability`
-- `reserve_job`
-- `settle_job`
-- `cancel_job`
-- `revoke_capability`
-
-**Core query operations**
-
-- `capability`
-- `job`
-- `usage_summary`
-- `config`
-
-**Native enforcement requirements**
-
-- Check the actual `env.block.height` / `env.block.time` where relevant.
-- Use checked arithmetic; never silently saturate a capability quota to zero.
-- Reject expired, revoked, unknown, or not-yet-active capabilities.
-- Verify provider/tool/version/action hashes are in the policy.
-- Reject duplicate `jobId` / nonce use.
-- Prevent reservations beyond available quota or maximum parallel reservations.
-- Do not allow a job to be settled twice or cancelled after settlement.
-- Restrict execute calls to approved EVM contract caller identities.
-- Keep the contract deterministic and avoid floating-point values.
-- Prefer no admin after deployment; if governance migration is necessary, document the trust implications and code-pin effects.
-
-**Important:** The EVM bridge passes the EVM contract's derived Native `qor1...` identity to the Native contract, not the originating browser EOA. Discover and test the exact sender derivation on Diana. Use this as an isolation boundary where appropriate.
-
-### 8.4 Agent SDK and MCP server
-
-Expose a small set of tools:
-
-- `list_allowed_tools` — list tools allowed by the current capability.
-- `get_capability_status` — report remaining quota, expiry and spend state.
-- `request_quote` — request price and version information from a provider.
-- `reserve_job` — submit a reservation to ChronoQuota.
-- `get_job_status` — check reservation/execution/settlement state.
-- `submit_result_receipt` — relay the provider-signed receipt for finalization.
-
-MCP is an integration interface, not an authorization authority. The MCP server must not invent permissions, sign as the owner, or bypass the contracts.
-
-### 8.5 Provider Gateway
-
-For the hackathon, one local demo provider is enough. It should:
-
-- Register a provider ID and fixed tool-version hash.
-- Return a signed quote with an expiry.
-- Verify a reservation is confirmed before doing billable work.
-- Execute a deterministic demo tool (for example, a simulated market-data query).
-- Generate a signed usage receipt bound to the reservation.
-- Submit the receipt to ChronoVault for settlement.
-
-An x402 adapter may be added later for HTTP 402-compatible providers. Do not make x402 the core novelty; AgentFabric and other winners already demonstrate x402 API access and scoped agent payments.
-
----
-
-## 9. Cross-VM transaction lifecycle
-
-### 9.1 Create a capability
-
-1. Owner selects services, tools, limits, and expiry in the dashboard.
-2. Frontend serializes a versioned policy and displays it for owner approval.
-3. Owner deposits DemoUSD into the EVM vault.
-4. Owner signs/authorizes the capability according to QoreChain account requirements.
-5. EVM validates the policy and calls Native `register_capability` through `0x0901`.
-6. EVM stores the capability and Native stores the capability state in the same transaction.
-7. If Native registration fails, the EVM capability/deposit changes revert.
-
-### 9.2 Quote and reserve
-
-1. Agent requests an allowed MCP/API service.
-2. Provider returns a quote containing provider ID, tool ID, tool-version hash, price, usage units, quote ID, and expiry.
-3. Agent submits a `reserve_job` request to ChronoVault.
-4. EVM validates owner policy, capability status, quote, maximum price, available escrow, per-call limits, job uniqueness, and EVM nonce.
-5. EVM calls Native `reserve_job` with the capability ID, job ID, provider/tool hashes, requested units, and reservation expiry.
-6. Native checks active status, expiry, scope, available quota, duplicate job ID, and reservation limits; it records the reservation.
-7. EVM locks the maximum charge in escrow and records the job as `Reserved`.
-8. The transaction commits both state changes or neither.
-9. The provider waits for confirmed reservation before performing work.
-
-### 9.3 Execute and settle
-
-1. Provider performs the external job.
-2. Provider signs a receipt bound to the capability, job, quote, tool version, result digest, measured units, price, nonce, and deadline.
-3. Provider submits the receipt to ChronoVault.
-4. EVM verifies the provider signature, job state, amount, nonce, expiry, and policy version. If ML-DSA-87 verification is used, first validate the current QoreChain precompile ABI and key format.
-5. EVM calls Native `settle_job`, passing the verified usage and receipt digest.
-6. Native transitions the reservation into settled usage, updates counters, and stores the receipt digest.
-7. EVM releases the provider payment and returns any unused reserved amount to the owner's available escrow.
-8. Both sides commit or both revert.
-
-### 9.4 Cancellation / timeout
-
-- A provider may explicitly fail a job; a reservation can then be cancelled under the policy.
-- A reservation can expire after a defined block-height deadline.
-- Cancellation must update Native reservation state and EVM escrow state atomically.
-- A timeout must not silently erase a job that has already been settled.
-- Do not promise refunds for work already completed outside the chain. A dispute/refund policy is a later product feature.
-
-### 9.5 Revocation
-
-- Owner revokes a capability.
-- EVM validates owner authorization.
-- EVM calls Native `revoke_capability` synchronously.
-- New reservations are rejected after the transaction commits.
-- Existing reservations follow an explicit policy: either they may settle only until their short reservation expiry, or the owner must cancel them. The MVP must select one rule and test it.
-
----
-
-## 10. Core data model
-
-Use integers for all amounts and units. Never use floating-point values for on-chain prices or quota.
-
-### 10.1 Capability policy (illustrative JSON)
+Suggested logical response fields:
 
 ```json
 {
-  "schemaVersion": 1,
-  "capabilityId": "0x<32-byte-id>",
-  "ownerEvm": "0x<owner-address>",
-  "agentEvm": "0x<agent-address>",
-  "agentNative": "qor1<agent-address>",
-  "allowedServices": [
-    {
-      "providerId": "data-provider-a",
-      "toolId": "market.search",
-      "toolVersionHash": "0x<32-byte-hash>",
-      "actionHash": "0x<32-byte-hash>"
-    }
-  ],
-  "maxUnitsPerJob": 1,
-  "totalUnits": 10,
-  "maxParallelJobs": 1,
-  "maxPricePerJob": "500000",
-  "maxTotalSpend": "5000000",
-  "token": "0x<DemoUSD-address>",
-  "validFromHeight": 0,
-  "expiryHeight": 0,
-  "policyVersion": 1
+  "version": 1,
+  "ok": true,
+  "operation": "reserve",
+  "job_id": "0x...",
+  "reservation_id": "0x...",
+  "reserved_units": "70",
+  "remaining_units": "30",
+  "state_hash": "0x..."
 }
 ```
 
-The values above are illustrative. `DemoUSD` uses six decimals in the demo. Native and EVM schemas must agree on integer widths and canonical hash encoding.
+The actual on-wire representation may use a fixed binary encoding more suitable for Solidity decoding. The wire-format decision must be recorded in `docs/INTERFACES.md` and tested in both Rust and Solidity.
 
-### 10.2 Quote
+### 7.4 Sender identity and authorization
 
-A quote should be domain-bound and include:
+The Native contract must authorize only the intended EVM escrow contract's mapped Native identity for `reserve`, `finalize`, and other EVM-originated operations. Verify the mapping on the live testnet and record it in deployment configuration. Do not authorize every caller or trust an address supplied inside the JSON payload.
 
-- `quoteId`
-- `providerId`
-- `toolId`
-- `toolVersionHash`
-- `units`
-- `maxCharge`
-- `currency/token`
-- `quoteExpiryHeight`
-- `providerNonce`
-
-### 10.3 Job receipt
-
-The receipt digest should cover at least:
-
-- chain ID;
-- ChronoVault contract address;
-- capability ID and policy version;
-- job ID and quote ID;
-- provider ID and provider key ID;
-- tool ID and tool-version hash;
-- request/input commitment;
-- output/result digest;
-- usage units and final charge;
-- provider nonce and deadline.
-
-Do not put private prompts, customer data, raw API credentials, or sensitive computation inputs directly on-chain. Store only commitments/hashes where required.
+Provider-originated operations must verify `info.sender` equals the provider's registered Native identity. An EVM buyer must not be allowed to publish another provider's inventory or withdraw another provider's bond.
 
 ---
 
-## 11. Security model and threat analysis
+## 8. State machines
 
-### 11.1 Threats to address
+### Provider state
 
-| Threat | Required mitigation |
+```text
+UNREGISTERED
+    │ register + admission checks
+    ▼
+ACTIVE ───────────────► PAUSED
+  │                       │
+  │ valid capacity        │ admin / provider action
+  ▼                       │
+ACTIVE ◄──────────────────┘
+  │
+  └──► EXITING ── no active reservations + no locked bond ──► CLOSED
+```
+
+The final state names and transitions must be implemented explicitly. A provider must not close while it has active reservations or locked collateral.
+
+### Slot accounting
+
+Maintain integer quantities only:
+
+```text
+available_units = total_units - reserved_units - consumed_units
+```
+
+This formula is illustrative; implementation must decide whether consumed capacity remains consumed for the slot or whether the service class models concurrency that can be released. Do not mix throughput units, concurrent-request units, and total-request units without separate fields.
+
+A slot must include at least:
+
+- `provider_id`
+- `slot_id`
+- `service_class_id`
+- `start_time` / `end_time` or a clearly defined block/time representation
+- `total_units`
+- `reserved_units`
+- `consumed_units` or a documented equivalent
+- `terms_version`
+- `status`
+
+### Reservation state
+
+```text
+RESERVED
+   │ provider begins work (off-chain; optional on-chain marker)
+   ▼
+RUNNING
+   │ delivery report / completion
+   ▼
+PENDING_SETTLEMENT ───────► DISPUTED (only if dispute mechanism is in MVP)
+   │ accepted evidence
+   ▼
+CONSUMED / SETTLED
+
+RESERVED or RUNNING
+   │ expiry / cancellation / deterministic failure
+   ▼
+RELEASED / REFUNDED / PENALIZED (according to terms)
+```
+
+Rules:
+
+- A reservation is single-use.
+- A job ID cannot be replayed to reserve, complete, settle, or slash twice.
+- Terms are immutable after acceptance.
+- A provider cannot reduce capacity below already reserved units.
+- The reservation's terms hash must match the EVM job's terms hash.
+- Timeout behaviour must be deterministic and specified before deployment.
+- Avoid an unbounded on-chain dispute state machine in the MVP.
+
+---
+
+## 9. Cross-VM transaction flow
+
+### 9.1 Provider onboarding
+
+1. Provider creates a Native account / maps its identity for the EVM runtime as required by QoreChain.
+2. Provider calls `register_provider` on the Native contract.
+3. Native performs the admission check. The staking-based part is enabled only after G0-A passes.
+4. Provider deposits liquid QOR service collateral through a Native transaction. The EVM-to-Native precompile cannot attach Native funds.
+5. Provider publishes a service slot.
+6. Provider adapter queries the Native slot and confirms that the available capacity matches the published state.
+
+### 9.2 Buyer reservation
+
+1. Buyer creates or selects a service request.
+2. Buyer approves the EVM escrow to spend the exact fUSD amount.
+3. Buyer calls `acceptOffer` on the EVM escrow.
+4. EVM escrow validates request, offer, deadline, price, and unused job ID.
+5. EVM escrow transfers buyer fUSD into escrow state.
+6. EVM escrow calls the `0x0901` precompile with a `reserve` execute message for the Native registry.
+7. Native verifies the authorized escrow identity, provider status, slot status, available units, job replay status, and locked-bond availability.
+8. Native updates reservation and bond state and returns the versioned response.
+9. EVM validates the response and records the EVM job state.
+10. If the Native call fails, response is empty, or response is malformed, EVM reverts. The buyer's fUSD transfer must not remain committed.
+
+### 9.3 Provider execution
+
+1. Provider scheduler receives or discovers the reservation.
+2. Before execution, it queries Native `reservation` and `slot` state.
+3. It dispatches only if the reservation is active, valid, within the time window, and not previously consumed.
+4. It runs the agreed API workload.
+5. It records request IDs, timestamps, result hashes, status codes, and latency measurements, while avoiding unnecessary personal data.
+
+### 9.4 Monitoring and settlement
+
+1. At least two independently operated monitor processes run the same or equivalent fixed workload.
+2. Each monitor constructs a canonical report containing job ID, terms hash, observation window, request count, success count, latency statistics, endpoint identity, and evidence digest.
+3. Each monitor signs the canonical report digest.
+4. EVM verifies monitor identity, signature, report freshness, job association, and metric bounds.
+5. EVM applies deterministic quorum and SLA rules.
+6. EVM calls Native `finalize` or `release` through `0x0901`.
+7. Native verifies reservation state, job ID, terms hash, billable units, and one-time finalization. It consumes capacity and updates / releases / penalizes the application bond as required.
+8. EVM pays the provider, refunds the buyer, or applies the agreed split.
+9. Any failure in the synchronous cross-VM transaction must leave both runtime states uncommitted.
+
+**MVP evidence limitation:** a monitor signature proves who signed a report, not that the report is truthful. Multiple monitors reduce single-monitor dependence but do not eliminate collusion or shared network measurement bias. Document this in the threat model.
+
+---
+
+## 10. Protocol invariants
+
+These invariants must be represented in contract tests, and the critical ones must be observable in the live demo.
+
+1. **Capacity bound:** `reserved_units + consumed_units <= total_units`, using the chosen slot accounting model.
+2. **No double booking:** aggregate active reservations cannot exceed the slot's remaining capacity.
+3. **Admission rule:** a provider that fails the configured Native admission check cannot publish or accept new reservations.
+4. **Bond encumbrance:** a provider cannot withdraw bond reserved against active jobs.
+5. **Escrow-reservation coupling:** no buyer fUSD escrow can remain committed if Native rejects the matching reservation.
+6. **Terms consistency:** EVM and Native must store the same job ID and terms hash.
+7. **Single-use reservation:** a job/reservation cannot be finalized, consumed, released, or penalized more than once.
+8. **Evidence validity:** no provider payout occurs without the required accepted monitor quorum and in-bounds measurements.
+9. **No overpayment:** total payout plus refund must not exceed the buyer's escrowed amount.
+10. **Bond conservation:** locked plus available provider bond must reconcile with the contract's actual Native QOR balance, accounting for any explicitly documented fees or penalties.
+11. **Atomicity:** a failure in either runtime must not leave only one side committed.
+12. **Authorization:** only the registered provider can manage its own slots / bond; only the approved EVM escrow identity can invoke buyer-side reservation/finalization operations.
+13. **Replay resistance:** unique IDs, nonces or consumed-state checks prevent replay of bridge payloads and evidence reports.
+14. **Deadline enforcement:** actions outside their permitted time window fail deterministically.
+
+The agent must add property-based / fuzz tests for capacity accounting, integer boundaries, replay protection, and settlement conservation.
+
+---
+
+## 11. Security and threat model
+
+Create `docs/THREAT_MODEL.md` before the contracts are considered feature-complete.
+
+Minimum threats to analyse:
+
+| Threat | Required mitigation / honest limitation |
 |---|---|
-| Prompt injection persuades agent to exceed its authority | Agent has no owner key; deterministic contract policy controls the capability. |
-| Agent key compromise | Narrow tool/provider/amount/usage/expiry scope; owner revocation; short reservation windows. |
-| Tool/provider substitution | Bind provider ID and tool-version hash into the capability and receipt. |
-| Replayed quote or receipt | Unique job IDs, monotonic nonces, chain/contract domain separation, state-machine checks. |
-| Concurrent calls race for the last quota unit | Native atomic reservation and checked arithmetic; provider waits for confirmed reservation. |
-| Provider performs work without payment reservation | Provider performs billable work only after confirmed reservation. |
-| Provider claims more usage than reserved | EVM and Native check actual units and maximum charge against reservation. |
-| Native call fails | EVM transaction reverts; payment is not released. |
-| EVM fails after Native mutation | Native state must roll back with the EVM transaction; prove on Diana. |
-| Bridge is inactive or target is not allowlisted | Check live params and circuit breaker; reject empty bridge response. |
-| Malformed JSON / payload injection | Use a proper JSON serializer or fixed-size hex fields; never string-concatenate untrusted text into JSON. |
-| Admin changes Native code after approval | Prefer immutable/no-admin contract and code pin; document governance assumptions. |
-| LLM generates an unsafe policy | LLM output is only a proposal; schema validation + human approval + deterministic enforcement. |
-| False provider receipt | Receipt proves provider attestation, not truth; later integrate TEE/reproducibility/disputes if required. |
+| Provider publishes fake capacity | Bond + monitoring + penalties; does not prove physical hardware exists |
+| Provider sells the same capacity outside QoreLease | Not prevented by the protocol; claims apply only to participating capacity inventory |
+| Provider lies about service execution | Independent monitors, signed evidence, challenge process if time allows |
+| Monitor collusion | Independent operators, quorum, stake / reputation or challenge path; residual trust remains |
+| Buyer replays reservation payload | Unique job ID, terms hash, state machine, one-time transitions |
+| EVM contract spoofed as Native caller | Allowlist the verified mapped escrow identity; check `info.sender` |
+| Native response empty because bridge is inactive | Fail closed on empty / malformed response; verify live precompile status |
+| Target contract code changed after allowlisting | No-admin immutable deployment and governance code pin; verify live pin |
+| Bridge or module state rolls back unexpectedly | Test synchronous journaling, bank-message rollback, and later EVM revert |
+| fUSD approval / transfer issue | Exact allowance, safe ERC-20 handling, no fee-on-transfer assumptions unless explicitly supported |
+| Provider drains / withdraws bond early | Track locked amount per reservation; only unlocked amount withdrawable |
+| Staking query gives incomplete or misleading amount | G0-A test; document whether delegations, unbonding, locks, and rewards are included |
+| Timestamp manipulation / boundary ambiguity | Conservative time windows, explicit source of time, test boundary blocks |
+| Gas exhaustion / large payload | Bounded payloads, bounded loops, live simulation and gas margins |
+| Admin compromise | Minimize privileged paths, document roles, avoid unilateral asset seizure |
 
-### 11.2 Critical engineering invariants
+### Bond terminology
 
-1. `availableUnits + reservedUnits + consumedUnits == totalUnits` for every capability, subject to the exact contract state model.
-2. `availableEscrow + reservedEscrow + paidOut + refunded == totalDeposited`.
-3. Every `jobId` is unique within the capability and cannot be settled more than once.
-4. `actualUnits <= reservedUnits` and `actualCharge <= reservedMaxCharge`.
-5. No reservation can be created for revoked, expired, not-yet-active, or out-of-scope capabilities.
-6. EVM job state and Native job state must agree after a successful transaction.
-7. If either VM rejects a synchronous Cross-VM operation, no partial on-chain state is retained.
-8. AI output is never an authority source.
-9. External side effects only start after a confirmed on-chain reservation.
-10. No secrets or private user data are stored in public chain state.
+Do not conflate these concepts:
 
-### 11.3 What the provider receipt does not prove
+- **Delegated stake:** QOR delegated by an account to one or more validators under the chain's staking module.
+- **Native service bond:** QOR deposited into the QoreLease Native contract as application-level collateral.
+- **Provider bond locked for a job:** a portion of the Native service bond encumbered by an active reservation.
 
-A provider-signed receipt is an accountable statement by the provider. It is not automatically proof that the API returned correct data, that a GPU performed the claimed computation, or that a model's answer was valid. A future release could add:
-
-- TEE/remote-attestation evidence;
-- reproducible execution or task-specific verifiers;
-- a dispute window and challenge protocol;
-- independent provider reputation;
-- proof-of-compute or ZK verification where practical.
-
-Do not attempt all of these in the hackathon MVP.
+The application must not claim it can slash a provider's validator delegation for an SLA violation. Any QoreLease penalty applies to the application's own liquid service bond, subject to the tested contract logic.
 
 ---
 
-## 12. MVP scope
+## 12. Suggested repository structure
 
-### 12.1 The minimum compelling demonstration
-
-Build one end-to-end scenario:
-
-- One owner.
-- One agent identity.
-- One provider gateway.
-- Two demo tools with different tool-version hashes.
-- One capability with a small quota, price cap, and block-height expiry.
-- DemoUSD escrow on EVM.
-- A working Native capability contract or an explicitly labelled lower-fidelity fallback.
-- One reservation, one provider execution, one signed receipt, and one settlement.
-- A successful Cross-VM transaction.
-- A Native-side rejection with EVM rollback.
-- An EVM-side revert after Native mutation with Native rollback.
-- A duplicate job / replay attempt rejected.
-- A dashboard showing the EVM and Native states side by side.
-
-### 12.2 The demo script
-
-**Scene 1 — Grant a capability**
-
-The owner authorizes `ResearchAgent` to use `market.search` for 3 calls, no more than 0.50 DemoUSD per call, expiring at a shown block height. The owner deposits 1.50 DemoUSD.
-
-**Scene 2 — Successful reserve**
-
-The agent requests the tool. The provider returns a quote. The agent reserves one unit. Show EVM escrow reserved and Native quota reserved in the same confirmed transaction.
-
-**Scene 3 — Provider execution and settlement**
-
-The provider performs a deterministic demo query and signs a receipt. The owner sees the output digest, tool version, usage and charge. The provider is paid; Native usage becomes consumed.
-
-**Scene 4 — Out-of-scope attempt**
-
-The agent tries `gpu.inference` or an unapproved tool version. The policy rejects it. No EVM payment or Native quota change occurs.
-
-**Scene 5 — Native-side failure**
-
-Use a test-only Native failure branch or invalid capability to force Native refusal. Show the EVM transaction reverting and escrow remaining unchanged.
-
-**Scene 6 — EVM-side failure after Native update**
-
-Use a test-only harness or a controlled post-bridge EVM revert after Native state mutation. Show Native reservation/quota and receipt state also unchanged. Do not include a production-callable arbitrary `forceRevert` flag in deployed code; use a separate test contract or test harness.
-
-**Scene 7 — Replay / concurrency**
-
-Attempt the same job ID twice, or submit two simultaneous requests for the final available unit. Only one can reserve successfully.
-
-### 12.3 Out of scope for the first build
-
-- Full open provider marketplace.
-- Multi-chain payments.
-- Real USDC or mainnet treasury handling.
-- Multi-provider arbitration and slashing.
-- Full x402 facilitator compatibility.
-- AI-generated smart contracts.
-- TEE, ZK, or verifiable compute proofs.
-- Multi-agent delegation trees.
-- Production-grade accounting, invoicing, and tax compliance.
-
----
-
-## 13. Optional “wow” features — prioritize only after the Cross-VM proof works
-
-### Priority A — Policy Dry-Run / Blast-Radius Simulator
-
-Let an owner simulate a sequence of agent actions against a proposed policy. Show which requests pass, which fail, the exact rule, remaining usage, maximum charge, and worst-case exposure. This is highly visible in the demo and does not require another on-chain protocol.
-
-### Priority B — Capability Passport / Portable Policy
-
-A stable capability ID and machine-readable policy that an agent runtime and multiple service providers can inspect. It should bind tool versions and action schemas. Do not claim cross-chain portability; the initial passport is QoreChain-specific.
-
-### Priority C — Post-Quantum Provider Receipts
-
-Provider receipts signed with ML-DSA-87 and verified through QoreChain's active PQC verification precompile, provided the exact ABI, registration/key format, signature bytes, and gas cost are validated. Use QoreChain's maintained `@qorechain/pqc` library and official standards; do not create a custom PQC variant.
-
-### Priority D — Multi-Agent Delegation with Non-Expansion
-
-An owner can grant a parent agent a capability, and the parent may delegate a smaller subset to a child agent. A child capability must never exceed the parent's allowed tools, units, price caps, or expiry. This is a stretch feature because it adds state and authorization complexity.
-
-### Priority E — Risk Circuit Breaker
-
-A deterministic circuit breaker can pause new reservations when the provider produces repeated invalid receipts, the quota invariant monitor detects a mismatch, or a defined usage anomaly threshold is crossed. AI can flag unusual behaviour, but it cannot unilaterally rewrite policy or transfer funds.
-
-### Priority F — x402 Adapter
-
-Add an x402-compatible provider adapter after the core protocol works. ChronoQuota's differentiator remains the Cross-VM capability and reservation state, not HTTP 402 itself.
-
----
-
-## 14. Recommended technical stack
-
-Use the simplest stack that proves the protocol. Do not introduce infrastructure without a concrete use case.
-
-| Layer | Recommendation | Notes |
-|---|---|---|
-| EVM contracts | Solidity `^0.8.24`, Foundry | Follow the QoreChain workshop and current compiler compatibility. |
-| Native contract | Rust + CosmWasm | Use the version/toolchain demonstrated by the current QoreChain Native docs and optimizer. |
-| Cross-VM adapter | Solidity library using `0x0901` | Centralize payload encoding and empty-return/error handling. |
-| Frontend | Next.js + TypeScript + Tailwind | Dashboard, capability editor, simulation, dual-state view. |
-| EVM client | viem / wagmi or QoreChain's current documented integration | Check current QoreChain compatibility before pinning versions. |
-| Agent integration | TypeScript + official MCP SDK | Expose only the ChronoQuota tools. |
-| Provider demo | TypeScript / Node.js | One local paid-tool simulator and receipt signer. |
-| PQC | `@qorechain/pqc` and QoreChain precompile only after ABI validation | Use NIST-standard implementations; do not invent cryptography. |
-| Read proxy | Next.js route or minimal Node API | Needed if browser CORS prevents direct Native REST reads. |
-| Persistence | Prefer on-chain state for protocol-critical state; optional SQLite/PostgreSQL for demo metadata | Never treat an off-chain DB as the canonical quota. |
-| Tests | Foundry + Rust unit tests + Diana testnet scripts | Local mocks are not a substitute for live proof. |
-
-### Suggested monorepo structure
+The coding agent may adjust this after documenting the reason in an ADR, but should avoid unnecessary services and frameworks.
 
 ```text
-chronoquota/
+qorelease/
 ├── README.md
-├── SOURCES.md
-├── AI_USAGE.md
-├── .env.example
-├── apps/
-│   ├── web/                 # Owner dashboard and invariant monitor
-│   ├── agent-mcp/           # MCP tools for agents
-│   └── provider-demo/       # Quote, reserve check, mock work, signed receipt
+├── docs/
+│   ├── SOURCE_REFERENCE.md
+│   ├── FEASIBILITY_SPIKES.md
+│   ├── ARCHITECTURE.md
+│   ├── INTERFACES.md
+│   ├── STATE_MACHINES.md
+│   ├── THREAT_MODEL.md
+│   ├── TEST_PLAN.md
+│   ├── DEPLOYMENT_RUNBOOK.md
+│   ├── DEMO_RUNBOOK.md
+│   ├── decisions/
+│   │   ├── ADR-0001-runtime-boundary.md
+│   │   ├── ADR-0002-staking-admission.md
+│   │   ├── ADR-0003-bond-accounting.md
+│   │   └── ADR-0004-monitor-quorum.md
+│   └── evidence/
+│       ├── testnet-addresses.md
+│       ├── governance-proposals.md
+│       └── transaction-evidence.md
 ├── contracts/
-│   ├── evm/                 # ChronoVault, bridge adapter, DemoUSD, tests
-│   └── native/              # cw-chronoquota CosmWasm contract and tests
+│   ├── native-registry/
+│   │   ├── Cargo.toml
+│   │   ├── src/
+│   │   ├── tests/
+│   │   └── schema/
+│   └── evm-escrow/
+│       ├── foundry.toml
+│       ├── src/
+│       ├── test/
+│       └── script/
+├── apps/
+│   └── web/                  # Next.js UI; do not build before G0 passes
+├── services/
+│   ├── provider-adapter/     # Native-aware provider scheduler
+│   └── monitor/              # Independent signed SLA probes
 ├── packages/
-│   ├── shared/              # Schemas, hash formats, IDs, constants
-│   └── sdk/                 # Agent/provider client helpers
+│   ├── protocol-types/       # Shared IDs, hashes, metrics and schemas
+│   └── qorechain-client/     # Thin, tested QoreChain helpers
 ├── scripts/
-│   ├── preflight/            # Live testnet checks
-│   ├── deploy/               # EVM deploy and Native governance artifacts
-│   ├── demo/                 # Happy path and failure/rollback scripts
-│   └── verify/               # EVM/Native invariant checks
-└── docs/
-    ├── ARCHITECTURE.md
-    ├── THREAT_MODEL.md
-    ├── ADRs/                 # Architecture decision records
-    ├── RESEARCH_LOG.md       # Verified sources, versions, dates, test output
-    └── TESTNET_EVIDENCE.md   # TX hashes, contract addresses, screenshots
+│   ├── check-network.ts
+│   ├── check-bridge.ts
+│   └── verify-deployment.ts
+└── .env.example
 ```
 
-This is a suggested structure, not a restriction. The coding agent may propose a better structure after inspecting the repository and the required tooling.
+### Stack direction
+
+- **Native contract:** Rust + the CosmWasm version supported by the current QoreChain testnet. Confirm the exact toolchain and optimizer image in the live Native-development and governance-upload documentation; do not blindly copy versions from an older tutorial.
+- **EVM contract:** Solidity, Foundry, explicit cross-VM precompile interface, fuzz / invariant tests.
+- **Frontend:** Next.js + TypeScript. Build only after protocol feasibility and contract interfaces are stable.
+- **QoreChain access:** official `@qorechain/sdk` / `@qorechain/evm` where appropriate, with viem or ethers for standard EVM operations. Verify the currently published package versions and APIs before coding.
+- **Provider adapter and monitor:** TypeScript / Node.js initially. Keep workload execution and measurement independent of the UI process.
+- **Database:** optional for cache, job display, and monitor evidence storage. It is not canonical state. Avoid introducing PostgreSQL or Redis until the MVP actually needs them.
 
 ---
 
-## 15. Implementation plan for the coding agent
+## 13. Required engineering documentation
 
-### Phase 0 — Repository and source reconnaissance (do this first)
+These files are not optional paperwork. They prevent the implementation agent from inventing protocol behaviour and make the project auditable for judges.
 
-1. Inspect the entire repository, existing files, package manager, Git state, environment files, and available scripts.
-2. Read this README and `SOURCES.md` completely.
-3. Read the local source and tests from the official QoreChain Workshop 3 repository.
-4. Check current QoreChain version, live Cross-VM module parameters, active-precompile list, circuit-breaker list, Native allowlist, target code pins, and EVM-window requirements.
-5. Confirm whether the candidate WDT target is actually approved and inspect the exact code semantics if considering it.
-6. Decide whether the custom `cw-chronoquota` Native contract is feasible through the current governance flow. Create a concise technical decision record.
-7. Write `docs/RESEARCH_LOG.md` and `docs/ADRs/0001-native-enforcement-path.md` with evidence and open questions.
+| Document | Must be created / updated when | Required contents |
+|---|---|---|
+| `docs/FEASIBILITY_SPIKES.md` | Before product implementation | G0-A through G0-E, exact commands, chain versions, results, and Go / No-Go decision |
+| `docs/ARCHITECTURE.md` | After feasibility passes and whenever architecture changes | Component diagram, runtime boundary, trust boundaries, data authority, deployment topology |
+| `docs/INTERFACES.md` | Before writing integration code | JSON execute messages, Rust schema, EVM ABI, response wire format, address mapping, versioning, error codes |
+| `docs/STATE_MACHINES.md` | Before contract implementation | Provider, slot, reservation, bond, escrow and settlement states; allowed transitions; timeout behaviour |
+| `docs/THREAT_MODEL.md` | Before security review | Assets, actors, trust assumptions, threats, mitigations, residual risks, admin powers |
+| `docs/TEST_PLAN.md` | Before meaningful contract code | Unit tests, integration tests, fuzz tests, invariants, cross-VM rollback cases and live testnet cases |
+| `docs/DEPLOYMENT_RUNBOOK.md` | Before testnet deployment | Build versions, checksums, proposal process, code IDs, addresses, pins, EVM window steps, environment variables, rollback / pause procedure |
+| `docs/DEMO_RUNBOOK.md` | Before final demo rehearsal | Exact accounts, balances, setup, commands, UI steps, expected states, failure demo, explorer links, fallback recording |
+| `docs/evidence/testnet-addresses.md` | Every deployment | Network, chain release, code IDs, contract addresses, mapped identities, token addresses, explorer links |
+| `docs/evidence/governance-proposals.md` | Every proposal | Proposal ID, messages, deposit, voting status, result, code checksum, allowlist pin |
+| `docs/evidence/transaction-evidence.md` | Every integration milestone | Tx hashes, block heights, expected and observed state changes, test output |
+| `docs/decisions/ADR-*.md` | On a material design decision | Context, alternatives, decision, consequences, source references, date |
 
-Do not start by building the dashboard. Do not assume that an address or ABI in an old document remains valid.
+### Documentation rules
 
-### Phase 1 — Cross-VM proof of life
-
-1. Reproduce Workshop 3's EVM-to-Native successful transaction on Diana.
-2. Reproduce Native-side failure rollback.
-3. Reproduce EVM-side post-Native rollback.
-4. Confirm the exact bridge precompile call signature, return-data encoding, gas behaviour, and EVM authorization-window setup on the current network.
-5. Save transaction hashes, EVM contract addresses, Native contract addresses, and before/after query results.
-
-**Gate:** Do not implement product flows until a real Diana transaction proves the bridge path.
-
-### Phase 2 — Native state machine decision
-
-Preferred:
-
-1. Implement a minimal `cw-chronoquota` with capability registration, reservation, settlement, cancellation, revocation, and queries.
-2. Unit-test checked arithmetic, height expiry, replay prevention, authorization, and state transitions.
-3. Build reproducibly with the optimizer documented by QoreChain.
-4. Prepare a governance proposal to store/instantiate the Native code.
-5. Prepare a separate governance proposal to add the exact contract address and code pin to the Cross-VM allowlist (unless a carefully verified combined proposal is justified).
-6. Wait for proposal outcome, then verify code hash, contract address, admin state, code history, allowlist, and pin from live endpoints.
-
-Fallback:
-
-If governance approval is not practical in time, use an existing approved contract only for what it actually does. The `qday-receipts` path can demonstrate atomic receipt writes and rollback; it cannot be described as a Native capability engine. Keep quota enforcement on EVM in this fallback and label the reduced architecture honestly.
-
-### Phase 3 — EVM contract and local test harness
-
-Implement `ChronoVault` with:
-
-- owner and agent identity binding;
-- DemoUSD deposit and escrow accounting;
-- capability metadata;
-- quote and policy verification;
-- job reservation and unique IDs;
-- Cross-VM adapter;
-- receipt verification;
-- provider settlement;
-- cancellation and revocation;
-- explicit events and reverts.
-
-Create a deterministic test harness for bridge success/failure. Tests must check state before and after every forced failure.
-
-### Phase 4 — Agent and provider integration
-
-1. Implement the small MCP interface.
-2. Implement a provider that returns a signed quote.
-3. Require a confirmed reservation before performing mock billable work.
-4. Generate a signed execution receipt.
-5. Submit the receipt and settle payment.
-6. Test duplicate job, altered quote, wrong provider, wrong tool version, over-price, expired capability, revoked capability, and reservation timeout.
-
-### Phase 5 — Dashboard and invariant monitor
-
-Implement:
-
-- Capability Studio.
-- Policy Preview / Simulator.
-- Escrow and usage view.
-- Agent activity/job timeline.
-- Provider quote and signed receipt view.
-- EVM and Native state side by side.
-- Cross-VM transaction explorer links.
-- Clear failure reasons.
-
-The dashboard must display real state read from the network, not hard-coded counters.
-
-### Phase 6 — Final testnet evidence and hackathon submission
-
-1. Run the full automated suite.
-2. Run the live happy path and both rollback paths on Diana.
-3. Record public transaction hashes and contract addresses.
-4. Verify the current allowlist and code pin once more.
-5. Record all contracts and testnet addresses in the project README.
-6. Record all AI-assisted development in `AI_USAGE.md` if claiming the Best AI-Native Build award.
-7. Prepare a demo video of no more than 3 minutes.
-8. Ensure the public repository uses a permitted open-source license (MIT or Apache-2.0 per current hackathon rules) and credits upstream kits/templates.
+- Each technical claim must link to the source or to a reproducible test.
+- Distinguish `CONFIRMED`, `TESTED LOCALLY`, `TESTED ON DIANA`, `ASSUMED`, and `NOT VERIFIED`.
+- Include exact chain release / block height for testnet-specific results.
+- Keep generated schemas and interface documents in version control.
+- Every deployment must record code checksum and contract code history / pin state.
+- Never overwrite a failed feasibility result with a later success without recording both and explaining the difference.
 
 ---
 
-## 16. Required test plan
+## 14. Implementation milestones
 
-### 16.1 Native contract unit tests
+### Phase 0 — Feasibility / no product UI
 
-- register valid capability;
-- reject invalid policy fields;
-- reject unauthorized EVM caller;
-- reserve within quota;
-- reject quota overrun;
-- reject expired/not-yet-active capability;
-- reject revoked capability;
-- reject wrong provider/tool/version;
-- reject duplicate job ID;
-- reject over-parallelization;
-- settle within reserved limits;
-- reject settlement beyond reserved units/price;
-- reject second settlement;
-- cancel reservation and release units;
-- reject invalid cancellation state;
-- checked arithmetic at zero and max integer boundaries.
+- Read official QoreChain Native, Cross-VM, EVM precompile, EVM window, governance, and gas-limit documentation.
+- Build the staking-probe contract.
+- Test staking-query availability and semantics.
+- Test Native bank-message effects inside a bridge call.
+- Test EVM caller identity mapping and authorization.
+- Prove the four atomicity cases in G0-D.
+- Confirm custom contract governance is feasible.
+- Write the feasibility report and ADR-0001.
 
-### 16.2 EVM Foundry tests
+**Exit criterion:** all critical gates pass and the Native-specific value proposition remains valid.
 
-- deposit and withdraw accounting;
-- create capability with correct owner signature/authorization;
-- policy and quote validation;
-- max price and max total spend enforcement;
-- nonce/replay prevention;
-- bridge active and non-empty return guard;
-- Native target failure reverts EVM escrow and job state;
-- EVM post-bridge revert restores Native state;
-- settlement releases exact amount;
-- overcharge and underdelivery fail;
-- duplicate job and altered receipt fail;
-- revoke stops new reservations;
-- cancellation and expiry accounting are exact.
+### Phase 1 — Protocol specification
 
-### 16.3 Live Diana tests
+- Freeze provider, slot, reservation, bond, escrow, and evidence state machines.
+- Define integer units and time representation.
+- Define EVM / Native shared job IDs and terms hashes.
+- Define versioned bridge message and response format.
+- Define monitor identity, signatures, report canonicalization, and quorum.
+- Write interface, threat model, and test plan documents.
 
-At least these transaction proofs must be included in `docs/TESTNET_EVIDENCE.md`:
+**Exit criterion:** no ambiguous field meaning or untested runtime assumption remains in the interface contract.
 
-1. Capability registration success (EVM and Native).
-2. Reservation success (EVM escrow reservation and Native quota reservation).
-3. Settlement success (provider paid and Native usage consumed).
-4. Native-initiated failure (EVM state unchanged).
-5. EVM-initiated post-bridge failure (Native state unchanged).
-6. Duplicate/replay rejection.
-7. Unapproved target rejection if feasible to demonstrate without wasting funds.
+### Phase 2 — Native registry
 
-### 16.4 Invariant checks
+- Implement provider registration and status.
+- Implement the validated admission rule.
+- Implement liquid service-bond deposit / lock / release / penalty.
+- Implement slot publication and capacity accounting.
+- Implement reserve / finalize / release and replay protections.
+- Add query endpoints and schema generation.
+- Unit-test and integration-test all transitions.
 
-Create a script that queries both runtimes and prints:
+**Exit criterion:** Native contract tests prove all provider-side invariants.
 
-```text
-capabilityId
-EVM: escrowed / reserved / paid / refunded
-Native: totalUnits / reservedUnits / consumedUnits / status
-Jobs: reserved / settled / cancelled
-Cross-VM invariant: PASS or FAIL
+### Phase 3 — EVM escrow
+
+- Implement buyer request and offer acceptance.
+- Implement fUSD escrow with exact amount accounting.
+- Implement `0x0901` bridge wrapper.
+- Fail closed on inactive precompile, empty response, malformed response, wrong job ID, or wrong terms hash.
+- Implement report verification and settlement rules.
+- Add Foundry unit, fuzz, invariant, and rollback tests.
+
+**Exit criterion:** local EVM tests prove escrow conservation and mocked bridge failure paths; Diana tests prove real bridge behaviour.
+
+### Phase 4 — Testnet integration and governance
+
+- Build reproducible Native Wasm artifact and checksum.
+- Submit / coordinate governance upload, instantiation, and bridge allowlist proposal(s).
+- Instantiate with no admin where possible; record code ID and code history.
+- Verify allowlist and code pin from live parameters.
+- Register / open required EVM authorization windows for test accounts.
+- Run end-to-end reservation and forced rollback tests.
+- Verify Native balance changes and EVM fUSD changes on-chain.
+
+**Exit criterion:** reproducible cross-VM state changes with explorer evidence and rollback proof.
+
+### Phase 5 — Provider adapter and monitor
+
+- Implement Native reservation polling / queries.
+- Prevent provider execution without a valid active reservation.
+- Run one fixed API workload.
+- Implement independent monitor jobs and canonical report signatures.
+- Test monitor disagreement, missing monitor, stale report, replay, and failed SLA.
+
+**Exit criterion:** service execution and settlement metrics are reproducible and not generated solely by the provider.
+
+### Phase 6 — Minimal UI and demo hardening
+
+- Provider view: register status, bond, published slots, reservations.
+- Buyer view: request, offer, reserve, escrow, evidence and settlement.
+- Monitor view / operator console: run checks and inspect signed reports.
+- Network health view: chain, precompile, target allowlist, EVM window, contract versions.
+- Prepare and rehearse the success and failure demos.
+
+**Exit criterion:** judges can see Native and EVM state, the failed overbooking attempt, a successful service delivery, and atomic rollback evidence.
+
+---
+
+## 15. Required tests
+
+### Native contract tests
+
+- Provider registration with valid / invalid admission result.
+- Bond deposit with exact funds and wrong denom.
+- Bond lock, partial release, penalty, and withdrawal.
+- Slot publish, update, expiry, and capacity boundary cases.
+- Two reservations racing for the same remaining capacity.
+- Duplicate job ID / replay attempt.
+- Reservation by unauthorized EVM sender.
+- Provider attempts to edit another provider's slot.
+- Withdrawal while bond remains locked.
+- Staking-query error, empty result, and denomination mismatch.
+
+### EVM tests
+
+- Correct fUSD transfer into escrow.
+- Insufficient allowance / balance.
+- Reservation accepted and response decoded.
+- Native call reverts.
+- Precompile call returns empty bytes.
+- Precompile response has wrong version / operation / job ID.
+- Native response valid but later EVM code deliberately reverts.
+- Invalid monitor signature and unknown monitor.
+- Duplicate / stale / wrong-job report.
+- Quorum not reached.
+- SLA passed, failed, and boundary values.
+- Payout + refund never exceeds escrow.
+- Settlement replay rejected.
+
+### Cross-VM Diana tests
+
+- Native update persists after successful EVM transaction.
+- Native reject leaves buyer fUSD unchanged.
+- EVM revert after Native update leaves Native state unchanged.
+- Native bank-message effect reverts with the transaction, if the protocol relies on it.
+- Caller identity matches the configured escrow mapping.
+- Bridge precompile active and target allowlisted.
+- EVM authorization window admits the intended call and rejects an out-of-scope call.
+- Target code pin matches the actual code ID and contract history.
+
+### Demo acceptance tests
+
+1. Provider A publishes 100 units.
+2. Buyer A reserves 70 units successfully.
+3. Buyer B attempts 50 units and is rejected.
+4. Buyer B's EVM fUSD balance and allowance/escrow accounting are correct after the failed transaction.
+5. Provider A executes the real 70-unit workload.
+6. Two of three independent monitors report valid results.
+7. EVM settlement succeeds and Native reservation is consumed.
+8. A deliberately forced EVM revert after a Native call proves rollback of both sides.
+
+---
+
+## 16. Network and deployment constraints
+
+These are time-sensitive. The implementation agent must re-check live sources and endpoints before acting.
+
+- The target is the Diana testnet, not mainnet.
+- The documented Cross-VM EVM precompile is `0x0000000000000000000000000000000000000901`.
+- The Cross-VM bridge has been documented as active on Diana with an allowlist and inactive on mainnet. Never rely on this static statement without checking live active-precompile and cross-VM parameters.
+- A call to an inactive precompile may return success with empty data. The Solidity wrapper must reject empty data.
+- The Native target must be in `bridge_allowed_targets` and its code must match the approved pin.
+- Testnet Native code upload is governance-controlled. An ordinary `store` transaction is not an acceptable deployment plan.
+- Every QoreChain EVM-signed account needs the required registered post-quantum key and an open EVM authorization window for the relevant operation. The window is opened with a hybrid-signed Native transaction.
+- The synchronous precompile cannot attach Native funds. Provider Native QOR bond deposits must be funded through Native transactions.
+- The documented Cross-VM message-size limit is 65,536 bytes; read the live parameter.
+- QOR uses `uqor` with 6 decimals on the Native side. EVM representations use 18 decimals. Use exact integer conversions and do not use floating point for funds.
+- Native Wasm gas has dynamic load / congestion pricing. Simulate and apply the documented margin; do not hard-code a gas limit from an old tutorial.
+- The testnet is shared. Use throwaway test accounts and never use production secrets in `.env` files or commands.
+
+### Testnet endpoints documented by QoreChain
+
+| Service | Endpoint |
+|---|---|
+| Cosmos REST / LCD | `https://api-testnet.qore.host` |
+| Consensus RPC | `https://rpc-testnet.qore.host` |
+| EVM JSON-RPC | `https://evm-testnet.qore.host` |
+| EVM WebSocket | `wss://evm-ws-testnet.qore.host` |
+| Explorer | `https://explore.qore.network` (select Testnet) |
+
+### Live checks to run before integration
+
+```bash
+# Cross-VM module parameters, including enabled flag, allowlist, pins and limits
+curl -s https://api-testnet.qore.host/qorechain/crossvm/v1/params | jq
+
+# Native code-upload parameters
+curl -s https://api-testnet.qore.host/cosmwasm/wasm/v1/codes/params | jq
+
+# EVM circuit breaker / disabled message types
+curl -s https://api-testnet.qore.host/cosmos/circuit/v1/disable_list | jq
+
+# Provider delegations (off-chain reference result for comparison with contract query)
+# Replace <QOR_ADDRESS> with a public testnet provider address.
+curl -s "https://api-testnet.qore.host/cosmos/staking/v1beta1/delegations/<QOR_ADDRESS>" | jq
+
+# EVM authorization window
+curl -s "https://api-testnet.qore.host/qorechain/pqc/v1/evm_window/<QOR_ADDRESS>" | jq
+
+# EVM chain ID should be 9800 on Diana
+cast chain-id --rpc-url https://evm-testnet.qore.host
 ```
 
-The script must fail non-zero if a state mismatch is detected.
+The REST staking endpoint is an off-chain comparison source. Its existence does **not** prove that the same staking query is available from inside CosmWasm.
 
 ---
 
-## 17. Demo acceptance criteria
+## 17. Definition of done
 
-A judge should be able to understand the project in under three minutes and verify the Cross-VM requirement directly.
+QoreLease is not considered a working Cross-VM product merely because the frontend loads or a transaction emits a Native receipt.
 
-The project is not ready to submit unless:
+The project is ready for judging only when:
 
-- [ ] The user can create a constrained capability.
-- [ ] The agent can discover and request an allowed service.
-- [ ] A provider quote is bound to the correct tool version.
-- [ ] A confirmed reservation occurs before external work starts.
-- [ ] The EVM contract makes a real synchronous call to an approved Native contract.
-- [ ] The Native contract changes its own state.
-- [ ] A Native-side failure causes the EVM operation to revert.
-- [ ] An EVM failure after the Native call causes Native state to roll back.
-- [ ] The provider receipt is bound to the job and capability.
-- [ ] Duplicate jobs/replays are denied.
-- [ ] The dashboard queries actual EVM and Native state.
-- [ ] The README accurately lists live contract addresses, code pins, chain IDs, transaction hashes, and known limitations.
+- The Native-specific capability has passed a reproducible feasibility test.
+- The custom Native contract is deployed and the exact code is allowlisted / pinned.
+- The EVM contract calls the actual Native contract through `0x0901` on Diana.
+- Buyer escrow and Native capacity reservation are atomic.
+- The overbooking attempt visibly fails with no buyer-fund loss.
+- A real service workload is executed against a valid Native reservation.
+- Independent monitor evidence is verified on-chain.
+- Settlement updates EVM escrow and Native reservation / bond state consistently.
+- A forced rollback proves both runtimes revert together.
+- The threat model, known limitations, and all documentation listed in §13 are current.
+- Deployment evidence contains real addresses, code IDs, checksums, proposal IDs, transaction hashes, and block heights.
 
----
+## 18. Non-negotiable product honesty
 
-## 18. AI coding-agent instructions — read this before changing code
-
-This section is intentionally explicit because an AI coding agent will implement the project.
-
-### 18.1 Mission
-
-Act as the lead protocol engineer and product implementation agent for ChronoQuota. Deliver a working Cross-VM application, not just a UI mock, an architecture diagram, or a Solidity contract that calls a fake bridge.
-
-### 18.2 You are allowed and expected to research beyond this README
-
-This README and `SOURCES.md` are a curated starting point, not a closed research boundary.
-
-You are explicitly allowed to:
-
-- Inspect every relevant file in the repository, including files not mentioned in these documents.
-- Read the full source code and tests of QoreChain SDKs, workshops, contracts, and example projects.
-- Browse official QoreChain docs, GitHub repositories, package source, live chain APIs, governance proposals, and release notes.
-- Inspect the source code of winning hackathon projects for architectural learning, subject to their licenses.
-- Research other standards, projects, vulnerabilities, and implementation patterns beyond the listed URLs.
-- Propose a better design if new evidence shows that the current proposal is incorrect, unsafe, unnecessarily complex, or incompatible with the live network.
-- Recommend a different library or framework when it is demonstrably better for the stated requirements.
-
-Do not restrict your research to the URLs in `SOURCES.md`. Do not treat this README as a command to ignore new evidence.
-
-### 18.3 Source and evidence hierarchy
-
-When sources disagree, use this order:
-
-1. Live Diana testnet parameters, current contract query results, current code hashes, and verified transaction behaviour.
-2. Official QoreChain documentation and governance records for the current release.
-3. Exact source code matching the deployed code ID/version and official QoreChain SDK/package source.
-4. Upstream standards and implementation source (for example, CosmWasm/CW20, NIST FIPS, MCP, x402).
-5. Official ETHGlobal/DoraHacks winner pages and public project repositories for comparative inspiration.
-6. Secondary articles, posts, and community discussions as supporting evidence only.
-
-Do not assume a README is accurate merely because it is in the repository. Inspect code and test behaviour.
-
-### 18.4 Record evidence
-
-For each material technical assumption, record:
-
-- source URL or repository commit/tag;
-- document/version date;
-- chain/network queried;
-- command or endpoint used;
-- observed output or transaction hash;
-- confidence and any unresolved gap.
-
-Update `docs/RESEARCH_LOG.md` and `docs/ADRs/` when changing a core technical decision.
-
-### 18.5 Do not hallucinate capabilities
-
-- Never invent a Native contract execute/query message.
-- Never assume a Native target is allowlisted without checking it live.
-- Never assume a precompile is active because its address is known.
-- Never assume a bridge call worked if it returned empty data.
-- Never assume local/mock tests prove Diana behaviour.
-- Never assume `decrease_allowance` is an expiry-enforcing quota operation without exact deployed-code tests.
-- Never claim a provider signature proves the provider's work was correct.
-- Never claim that blockchain atomicity undoes an external API call.
-- Never store API keys, user secrets, seed phrases, or private prompts on chain.
-- Never describe a mock DemoUSD token as real USDC or a production stablecoin.
-
-### 18.6 Preserve product fundamentals, but challenge implementation choices
-
-Do not silently turn ChronoQuota into a generic agent wallet, x402 marketplace, or API proxy. The product's central thesis is cross-runtime capability, metering, reservation, and settlement.
-
-However, you may simplify the MVP, change internal modules, replace a fragile primitive, or propose a better UI/stack. Explain the reason and update an ADR. If the custom Native contract cannot be approved in time, implement the honest fallback and state clearly which claims are no longer valid.
-
-### 18.7 Work autonomously and avoid unnecessary questions
-
-Use sound engineering judgment. Inspect the codebase and available resources before asking the user for information. Ask only when a genuine decision cannot be inferred, such as selecting a production provider, token, or governance deposit owner. Do not stop to ask permission for routine code organization, tests, refactoring, or research.
-
-Do not delete `.git`, user data, keys, environment files, or unrelated files. The project is intended to start clean, but preserve secrets and repository history. Use `.env.example` for variable names and keep actual `.env` files out of Git.
-
-### 18.8 Development behaviour
-
-- Build in vertical slices and keep the app runnable.
-- Prefer tests before implementation for critical state machines.
-- Use exact integer arithmetic.
-- Keep policy validation deterministic.
-- Make failures visible and actionable.
-- Add types and validation at API boundaries.
-- Pin dependencies and document versions.
-- Add security checks for every external input.
-- Never remove a failing test to make a build pass; fix the cause or explain why the test was invalid.
-- Use a test-only harness for forced failures; never expose arbitrary failure switches in production contracts.
-- Do not deploy or spend testnet assets without recording the operation and the intended test.
-
-### 18.9 First task after reading this README
-
-Do not immediately generate the whole application.
-
-First:
-
-1. Inspect the repo.
-2. Read `SOURCES.md`.
-3. Verify current Diana network status, the Cross-VM precompile, allowlist, target code pins, WDT semantics if relevant, PQC precompiles, and EVM-window requirements.
-4. Run/recreate the official Workshop 3 Cross-VM proof.
-5. Produce a concise **Implementation Readiness Report** with: verified facts, failed checks, unknowns, Native contract decision, MVP recommendation, and implementation plan.
-6. Then implement the smallest end-to-end slice that proves a real EVM-to-Native state transition.
-
-The agent should continue beyond the curated sources where necessary. It should be curious, skeptical, and technically rigorous—not constrained to copy this specification verbatim.
+- QoreLease enforces provider-declared capacity among participating applications; it does not prove physical GPU inventory.
+- Staking eligibility is not the same as service-bond collateral.
+- A monitor signature authenticates the monitor's statement; it does not prove the statement is true.
+- SLA verification measures defined service-level metrics, not arbitrary model-output correctness.
+- A Native contract is not automatically more secure or authoritative just because it is Native.
+- A Cross-VM demo is not enough; the application must have a Native-specific responsibility that the product genuinely needs.
 
 ---
 
-## 19. Risks and unresolved decisions
+## 19. Start here
 
-These decisions must be closed during Phase 0/1:
+The first coding session should do only the following:
 
-1. **Custom Native contract approval:** Can `cw-chronoquota` be stored, instantiated, and allowlisted through governance within the hackathon schedule?
-2. **Native contract security boundary:** Which EVM vault caller(s) are trusted, and how is the derived Native sender validated?
-3. **Bridge return format:** What exact bytes are returned by the current Diana precompile and how must Solidity decode them?
-4. **PQC signature verification:** What is the current `pqcVerify` ABI, digest format, and gas cost? Is it needed for the MVP or should it be a stretch feature?
-5. **EVM authorization windows:** What exact settings and allowed-target semantics are required by the current v3.2.9 network?
-6. **Token model:** Use a local DemoUSD contract unless a real approved demo token is verified.
-7. **Provider receipt trust:** Signed receipts are attestations, not proof of result correctness. Decide what can be credibly demonstrated.
-8. **Reservation expiry:** Define the rules for uncompleted jobs and provider timeouts.
-9. **Concurrency:** Decide whether to allow one or multiple parallel jobs per capability; start with one for MVP.
-10. **Data privacy:** Keep all raw service inputs/outputs off chain; store hashes/commitments only.
+1. Read `docs/SOURCE_REFERENCE.md` and inspect the official QoreChain docs / Workshop 3 code.
+2. Create `docs/FEASIBILITY_SPIKES.md`.
+3. Implement the smallest possible `staking-probe` contract or produce source-level evidence explaining why it cannot be run yet.
+4. Test `StakingQuery::AllDelegations` on the actual Diana CosmWasm runtime.
+5. Test a Native bank-message effect through the synchronous EVM bridge and then force an EVM revert.
+6. Verify mapped sender identity and EVM-window scope.
+7. Report Pass / Fail / Unknown for G0-A through G0-E.
 
----
-
-## 20. Submission and project quality
-
-The current Build Before Q-Day rules require each project to have a public GitHub repository, README, featured image, demo video up to 3 minutes, and QoreChain testnet addresses. The Cross-VM category is for teams of 1–4 and requires an EVM contract to atomically call an approved Native contract with testnet proof.
-
-Before submission:
-
-- Verify the category and rules on the official hackathon site again.
-- Use MIT or Apache-2.0 as permitted by the current rules.
-- Credit QoreChain starter kits, SDKs, libraries, and other dependencies.
-- Include the live Native contract address and code pin.
-- Include the EVM contract address and transaction hashes.
-- Include rollback evidence and explain limitations honestly.
-- Include `AI_USAGE.md` if entering the Best AI-Native Build special award.
-
----
-
-## 21. Final product statement
-
-**ChronoQuota is a cross-VM capability and settlement protocol that gives autonomous agents narrowly scoped access to paid services. The EVM manages escrow and payment; QoreChain Native maintains the canonical usage capability and job state. A confirmed reservation must precede billable provider work, and the Native quota transition and EVM financial transition must commit or revert together. Provider-signed receipts tie the service result to the capability and job, while the dashboard independently verifies both execution lanes.**
-
-The hackathon MVP succeeds only when this is demonstrated with real synchronous EVM-to-Native transactions on QoreChain Diana testnet, including both Native-side and EVM-side rollback.
-
----
-
-## 22. Start here
-
-1. Read [`SOURCES.md`](./SOURCES.md).
-2. Run the Phase 0 reconnaissance and live network checks.
-3. Reproduce QoreChain Workshop 3.
-4. Validate whether `cw-chronoquota` can be approved; if not, document the reduced fallback honestly.
-5. Build the protocol slice before the dashboard.
+Do not start the full QoreLease registry, EVM escrow, agent marketplace, or frontend until the feasibility report supports proceeding.
