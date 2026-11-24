@@ -1,0 +1,14 @@
+{
+  "name": "qorelease-provider-adapter",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Native-reservation-gated provider execution adapter (local Phase 1 implementation)",
+  "engines": {
+    "node": ">=22.6.0"
+  },
+  "scripts": {
+    "test": "node --experimental-strip-types --test src/adapter.test.ts",
+    "e2e": "node --experimental-strip-types src/e2e.ts"
+  }
+}
