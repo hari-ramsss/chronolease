@@ -1,0 +1,14 @@
+[profile.default]
+src = "src"
+out = "out"
+libs = ["lib"]
+test = "test"
+script = "script"
+solc_version = "0.8.24"
+optimizer = true
+optimizer_runs = 200
+via_ir = false
+evm_version = "cancun"
+
+# Diana-testnet parameters are read live before any deployment (see DEPLOYMENT_RUNBOOK.md).
+# The chain id recorded in the specification is 9800; confirm with `cast chain-id` first.
