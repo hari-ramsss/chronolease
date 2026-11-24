@@ -1,0 +1,94 @@
+--- cargo tree --locked -i crypto-bigint ---
+warn: could not canonicalize path: 'C:\Users\Hari Ram'
+crypto-bigint v0.5.5
++-- elliptic-curve v0.13.8
+    +-- ecdsa v0.16.9
+    ¦   +-- k256 v0.13.4
+    ¦       +-- cosmwasm-crypto v1.5.11
+    ¦           +-- cosmwasm-std v1.5.11
+    ¦               +-- cw-storage-plus v1.2.0
+    ¦               ¦   +-- cw2 v1.1.2
+    ¦               ¦   ¦   +-- qorelease-staking-probe v0.1.0 (C:\Users\Hari Ram\Documents\chronoquota\contracts\staking-probe)
+    ¦               ¦   +-- qorelease-staking-probe v0.1.0 (C:\Users\Hari Ram\Documents\chronoquota\contracts\staking-probe)
+    ¦               +-- cw2 v1.1.2 (*)
+    ¦               +-- qorelease-staking-probe v0.1.0 (C:\Users\Hari Ram\Documents\chronoquota\contracts\staking-probe)
+    +-- k256 v0.13.4 (*)
+--- cargo tree --locked -i curve25519-dalek ---
+warn: could not canonicalize path: 'C:\Users\Hari Ram'
+curve25519-dalek v3.2.0
++-- ed25519-zebra v3.1.0
+    +-- cosmwasm-crypto v1.5.11
+        +-- cosmwasm-std v1.5.11
+            +-- cw-storage-plus v1.2.0
+            ¦   +-- cw2 v1.1.2
+            ¦   ¦   +-- qorelease-staking-probe v0.1.0 (C:\Users\Hari Ram\Documents\chronoquota\contracts\staking-probe)
+            ¦   +-- qorelease-staking-probe v0.1.0 (C:\Users\Hari Ram\Documents\chronoquota\contracts\staking-probe)
+            +-- cw2 v1.1.2 (*)
+            +-- qorelease-staking-probe v0.1.0 (C:\Users\Hari Ram\Documents\chronoquota\contracts\staking-probe)
+--- cargo tree --locked -i derivative ---
+warn: could not canonicalize path: 'C:\Users\Hari Ram'
+derivative v2.2.0 (proc-macro)
++-- cosmwasm-std v1.5.11
+    +-- cw-storage-plus v1.2.0
+    ¦   +-- cw2 v1.1.2
+    ¦   ¦   +-- qorelease-staking-probe v0.1.0 (C:\Users\Hari Ram\Documents\chronoquota\contracts\staking-probe)
+    ¦   +-- qorelease-staking-probe v0.1.0 (C:\Users\Hari Ram\Documents\chronoquota\contracts\staking-probe)
+    +-- cw2 v1.1.2 (*)
+    +-- qorelease-staking-probe v0.1.0 (C:\Users\Hari Ram\Documents\chronoquota\contracts\staking-probe)
+--- cargo tree --locked -i zeroize ---
+warn: could not canonicalize path: 'C:\Users\Hari Ram'
+zeroize v1.8.1
++-- crypto-bigint v0.5.5
+¦   +-- elliptic-curve v0.13.8
+¦       +-- ecdsa v0.16.9
+¦       ¦   +-- k256 v0.13.4
+¦       ¦       +-- cosmwasm-crypto v1.5.11
+¦       ¦           +-- cosmwasm-std v1.5.11
+¦       ¦               +-- cw-storage-plus v1.2.0
+¦       ¦               ¦   +-- cw2 v1.1.2
+¦       ¦               ¦   ¦   +-- qorelease-staking-probe v0.1.0 (C:\Users\Hari Ram\Documents\chronoquota\contracts\staking-probe)
+¦       ¦               ¦   +-- qorelease-staking-probe v0.1.0 (C:\Users\Hari Ram\Documents\chronoquota\contracts\staking-probe)
+¦       ¦               +-- cw2 v1.1.2 (*)
+¦       ¦               +-- qorelease-staking-probe v0.1.0 (C:\Users\Hari Ram\Documents\chronoquota\contracts\staking-probe)
+¦       +-- k256 v0.13.4 (*)
++-- curve25519-dalek v3.2.0
+¦   +-- ed25519-zebra v3.1.0
+¦       +-- cosmwasm-crypto v1.5.11 (*)
++-- der v0.7.10
+¦   +-- ecdsa v0.16.9 (*)
+¦   +-- pkcs8 v0.10.2
+¦   ¦   +-- elliptic-curve v0.13.8 (*)
+¦   +-- sec1 v0.7.3
+¦   ¦   +-- elliptic-curve v0.13.8 (*)
+¦   +-- spki v0.7.3
+¦       +-- ecdsa v0.16.9 (*)
+¦       +-- pkcs8 v0.10.2 (*)
++-- ed25519-zebra v3.1.0 (*)
++-- elliptic-curve v0.13.8 (*)
++-- generic-array v0.14.9
+¦   +-- block-buffer v0.9.0
+¦   ¦   +-- sha2 v0.9.9
+¦   ¦       +-- ed25519-zebra v3.1.0 (*)
+¦   +-- block-buffer v0.10.4
+¦   ¦   +-- digest v0.10.7
+¦   ¦       +-- cosmwasm-crypto v1.5.11 (*)
+¦   ¦       +-- ecdsa v0.16.9 (*)
+¦   ¦       +-- elliptic-curve v0.13.8 (*)
+¦   ¦       +-- hmac v0.12.1
+¦   ¦       ¦   +-- rfc6979 v0.4.0
+¦   ¦       ¦       +-- ecdsa v0.16.9 (*)
+¦   ¦       +-- sha2 v0.10.9
+¦   ¦       ¦   +-- cosmwasm-std v1.5.11 (*)
+¦   ¦       ¦   +-- k256 v0.13.4 (*)
+¦   ¦       +-- signature v2.2.0
+¦   ¦           +-- ecdsa v0.16.9 (*)
+¦   ¦           +-- k256 v0.13.4 (*)
+¦   +-- crypto-bigint v0.5.5 (*)
+¦   +-- crypto-common v0.1.6
+¦   ¦   +-- digest v0.10.7 (*)
+¦   +-- digest v0.9.0
+¦   ¦   +-- curve25519-dalek v3.2.0 (*)
+¦   ¦   +-- sha2 v0.9.9 (*)
+¦   +-- elliptic-curve v0.13.8 (*)
+¦   +-- sec1 v0.7.3 (*)
++-- sec1 v0.7.3 (*)
