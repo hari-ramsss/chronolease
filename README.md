@@ -26,20 +26,35 @@
 
 ## 0. Instructions for the coding agent Ã¢â‚¬â€ read first
 
-This repository starts as a specification, not as an invitation to immediately generate the entire application.
+**Current state (25 November 2026): Phase 1 local implementation is already committed.**
+Do not redo the original Phase 0 deliverables. Read the implemented code and the
+current interface/test documents before making changes.
 
-1. Read this README completely and then read [`SOURCES.md`](SOURCES.md).
-2. Treat the **feasibility gates** in Ã‚Â§4 as blocking. Do not build the marketplace, dashboard, AI agents, or full protocol before the gates pass.
-3. Do not assume a standard CosmWasm feature is enabled by QoreChain merely because it exists in `cosmwasm-std`. In particular, `StakingQuery::AllDelegations` is a mandatory test, not an established QoreChain capability.
-4. Do not describe the project as trustless proof of physical GPU ownership or AI-answer correctness. It can enforce declared capacity and settle based on independently measured service-level evidence.
-5. Re-read the live Diana testnet parameters before every deployment or cross-VM integration test. Network status, allowlists, circuit breakers, gas limits, and governance parameters can change.
-6. Use the official QoreChain Workshop 3 `02-cross-vm` example as a baseline for the bridge mechanics. Do not copy its receipt-book product logic and call that the QoreLease implementation.
-7. Any implementation decision that changes a runtime boundary, trust assumption, state transition, or security property must be recorded in an ADR under `docs/decisions/`.
-8. Keep on-chain state authoritative. A database, event indexer, provider API, or agent may cache data, but must not be treated as the source of truth for reservations, bonds, escrow, or settlement.
-9. Never invent deployed contract addresses, token addresses, RPC endpoints, precompile availability, governance approval, or successful test results. Record the actual values and transaction hashes in deployment evidence.
-10. If a required capability cannot be demonstrated, stop and report the failure with evidence. Do not silently replace an on-chain property with a trusted backend or an oracle and continue claiming the same guarantee.
+1. Read this README, [`SOURCES.md`](SOURCES.md), `docs/ARCHITECTURE.md`,
+   `docs/INTERFACES.md`, `docs/STATE_MACHINES.md`, `docs/TEST_PLAN.md`, and
+   `docs/decisions/ADR-0001..0008.md`.
+2. The Phase 1 code lives in `contracts/qorelease-registry/` (Native),
+   `contracts/evm/` (Solidity escrow and bridge service), and
+   `services/provider-adapter/` (TypeScript). Run
+   `powershell -ExecutionPolicy Bypass -File scripts/local-e2e.ps1` to reproduce
+   the local tests before changing anything.
+3. The accepted `contracts/staking-probe/`, optimized Wasm, checksums, evidence,
+   and Proposal A artifacts must be preserved. They are not product code.
+4. G0-A..E are still **NOT VERIFIED on Diana**. Local mocks prove logic only;
+   never describe them as Diana compatibility. Marking a gate passed requires
+   real chain evidence under `docs/evidence/`.
+5. Do not assume Diana supports `StakingQuery::AllDelegations`. The exact
+   bonded-vs-unbonding question is recorded in ADR-0002. The staking query is
+   isolated in one Native helper and fails closed.
+6. Do not describe the project as trustless proof of physical GPU ownership or AI-answer correctness. It enforces declared capacity and settles on independently measured service-level evidence.
+7. Re-read live Diana parameters before every deployment or cross-VM integration test. Network status, allowlists, circuit breakers, gas limits, and governance parameters can change.
+8. Keep on-chain state authoritative. Databases, indexers, provider APIs, and agents may cache data but are not the source of truth for reservations, bonds, escrow, or settlement.
+9. Never invent deployed addresses, token addresses, RPC endpoints, precompile availability, governance approval, or successful test results. Record actual values and transaction hashes in deployment evidence.
+10. Any change to a runtime boundary, trust assumption, state transition, or security property needs a new/updated ADR. UI/UX design guidance is in `docs/uiux/`; it is not implemented frontend code and does not imply an auction mechanism exists.
 
-**First deliverable from the coding agent:** a short feasibility report with reproducible tests and a Go / No-Go recommendation. No product UI is required for that deliverable.
+**Next deliverable:** close the live gates in order (G0-A..E), then deploy and
+integrate. Do not generate another general feasibility report or resubmit
+Proposal A as a substitute for implementation work.
 
 ---
 
@@ -166,7 +181,9 @@ Use a fixed workload and an agreed response schema. The contract should verify s
 
 ## 4. Mandatory feasibility gates Ã¢â‚¬â€ do these before product implementation
 
-The project is not approved for full implementation until the following tests have evidence.
+Local Phase 1 implementation and mocked tests are complete, but none of these
+gates has Diana evidence. Live deployment, bridge use, and any claim of Diana
+compatibility remain blocked until each gate is passed and recorded.
 
 ### Gate G0-A Ã¢â‚¬â€ Does QoreChain expose staking queries to CosmWasm contracts?
 
@@ -369,7 +386,10 @@ This still does not stop a provider from selling the same capacity outside QoreL
 
 ## 7. Contract responsibilities and proposed interfaces
 
-These are proposed interfaces. The implementation agent must produce an interface specification and tests before finalizing signatures, argument layouts, or storage schemas.
+These tables describe the original design intent. The implemented message
+schemas, wire format, error codes, and state transitions are recorded in
+`docs/INTERFACES.md` and `docs/STATE_MACHINES.md`; use those documents when
+working on the existing code.
 
 ### 7.1 Native contract Ã¢â‚¬â€ `QoreLeaseRegistry`
 
@@ -640,7 +660,11 @@ The application must not claim it can slash a provider's validator delegation fo
 
 ## 12. Suggested repository structure
 
-The coding agent may adjust this after documenting the reason in an ADR, but should avoid unnecessary services and frameworks.
+The tree below was the original suggestion. The actual Phase 1 paths are
+`contracts/qorelease-registry/`, `contracts/evm/`, `services/provider-adapter/`,
+`scripts/local-e2e.{sh,ps1}`, `docs/uiux/`, and `docs/decisions/ADR-*.md`.
+The probe remains at `contracts/staking-probe/`. Avoid unnecessary services and
+frameworks; no marketplace UI, database, or monitor network exists yet.
 
 ```text
 qorelease/
@@ -732,6 +756,14 @@ These files are not optional paperwork. They prevent the implementation agent fr
 ---
 
 ## 14. Implementation milestones
+
+**Status note:** the owner directed implementation before the gates closed.
+Local Phase 1 work covers the Native registry, EVM escrow, bridge wrapper,
+provider adapter, stateful local atomicity tests, and one local end-to-end run
+(the items described in Phases 1-3 and the adapter part of Phase 5 below).
+Gates G0-A..E, reproducible production Wasm for the new registry, live Diana
+integration, forced live rollback, on-chain monitor evidence, and the UI are
+still outstanding. The phase numbering below is historical, not a live checklist.
 
 ### Phase 0 Ã¢â‚¬â€ Feasibility / no product UI
 
@@ -952,19 +984,31 @@ The project is ready for judging only when:
 
 ---
 
-## 19. Start here
+## 19. Start here (updated for the implemented repository)
 
-The first coding session should do only the following:
+The next coding session should do the following:
 
-1. Read `docs/SOURCE_REFERENCE.md` and inspect the official QoreChain docs / Workshop 3 code.
-2. Create `docs/FEASIBILITY_SPIKES.md`.
-3. Implement the smallest possible `staking-probe` contract or produce source-level evidence explaining why it cannot be run yet.
-4. Test `StakingQuery::AllDelegations` on the actual Diana CosmWasm runtime.
-5. Test a Native bank-message effect through the synchronous EVM bridge and then force an EVM revert.
-6. Verify mapped sender identity and EVM-window scope.
-7. Report Pass / Fail / Unknown for G0-A through G0-E.
+1. Read `README.md` sections 0 and 4, `docs/FEASIBILITY_SPIKES.md`,
+   `docs/INTERFACES.md`, `docs/TEST_PLAN.md`, and `docs/decisions/ADR-*.md`.
+2. Reproduce the local baseline: `cargo test --locked` in
+   `contracts/qorelease-registry/`, `bash docs/evidence/run-foundry-tests.sh`
+   in WSL2, and `powershell -ExecutionPolicy Bypass -File scripts/local-e2e.ps1`.
+   Do not change contract logic without making these pass first.
+3. Work on the **open gates**, not on re-creating the probe or rewriting Phase 1:
+   - G0-A: get the accepted probe or new registry executed on Diana and record
+     the staking result plus bonded-vs-unbonding semantics.
+   - G0-B/G0-D: verify bank-message and bridge rollback with real transactions.
+   - G0-C: verify the mapped `qor1...` identity of the deployed escrow and the
+     EVM authorization-window scope. Capture the real bridge response format.
+   - G0-E: governance upload, instantiation, allowlist and code pin for the new
+     registry; verify from live parameters.
+4. Only after those gates pass: build a reproducible optimized Wasm for the new
+   registry, deploy, run the live E2E scenario, then implement the frontend from
+   `docs/uiux/` guidance. The UI/UX documents are design handoff, not built code,
+   and do not authorize an on-chain auction or sealed-bidding claims.
 
-Do not start the full QoreLease registry, EVM escrow, agent marketplace, or frontend until the feasibility report supports proceeding.
+Do not submit Proposal A, broadcast transactions, request keys/seeds, or claim
+Diana compatibility from the local mocks.
 
 
 ## Phase 0 status — 24 November 2026

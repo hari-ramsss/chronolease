@@ -2,6 +2,14 @@
 
 This file is the source index for the implementation agent. It is intentionally separate from the product README so the agent can retrieve primary material without treating this specification as a substitute for the chain's own documentation.
 
+**Implementation status (25 November 2026):** Phase 1 local code already exists
+in `contracts/qorelease-registry/`, `contracts/evm/`, and
+`services/provider-adapter/`. Use `docs/INTERFACES.md`, `docs/TEST_PLAN.md`, and
+`docs/decisions/ADR-*.md` for what is actually built. This file remains the
+source reference for **live** work: QoreChain docs and Diana parameters still
+take precedence over both this index and local test results. G0-A..E remain
+unverified on Diana; do not treat the documented APIs below as live evidence.
+
 **Last reviewed:** 24 November 2026  
 **Target network:** QoreChain Diana testnet (`qorechain-diana`)  
 **Reference hierarchy:** Current QoreChain documentation and live network parameters take precedence over this file. QoreChain source code / released binaries take precedence over older tutorials. General CosmWasm documentation explains standard APIs but does not prove QoreChain enables them.
