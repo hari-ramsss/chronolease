@@ -24,12 +24,12 @@ implementation approval.
   installed but its daemon was unavailable. `qorechaind`, Foundry `forge`, and
   `cast` were not installed.
 
-Sources: the live endpoints prescribed in `SOURCES.md` Ã‚Â§4; QoreChain's
+Sources: the live endpoints prescribed in `SOURCES.md` §4; QoreChain's
 [Cross-VM reference](https://docs.qorechain.io/developer-guide/cross-vm-reference/),
 [precompile reference](https://docs.qorechain.io/developer-guide/evm-precompiles/),
 and [contract-governance guide](https://docs.qorechain.io/developer-guide/governance-proposals-contracts/).
 
-## G0-A Ã¢â‚¬â€ Can a CosmWasm contract query Native delegations?
+## G0-A — Can a CosmWasm contract query Native delegations?
 
 **Question:** Does the deployed Diana runtime expose
 `StakingQuery::AllDelegations` to a QoreChain Native contract, with complete
@@ -187,7 +187,7 @@ no-delegation result and a multi-delegation result with a checked `uqor`
 aggregate while retaining a non-`uqor` denomination. **NOT VERIFIED ON DIANA.**
 The existence of the standard CosmWasm API is not runtime evidence.
 
-**Pass or fail:** **UNKNOWN Ã¢â‚¬â€ blocking.**
+**Pass or fail:** **UNKNOWN — blocking.**
 
 **Unresolved risks:** whether the Diana query router supports the request from
 contract execution; returned denomination/stake-category semantics; malformed
@@ -197,7 +197,7 @@ or nonexistent provider behaviour; and bridge-context equivalence.
 component dependent on this query until the required deployment evidence is
 recorded.
 
-## G0-B Ã¢â‚¬â€ Native bank-message effects through the bridge
+## G0-B — Native bank-message effects through the bridge
 
 **Question:** Can a bridge-invoked Native contract issue `BankMsg::Send` for a
 service-bond release or penalty, with all state and balance changes journaled
@@ -207,13 +207,13 @@ when either runtime later reverts?
 bridge target or test account is available. The docs demonstrate Native bank
 messages, but that does not prove this bridge path.
 
-**Pass or fail:** **UNKNOWN Ã¢â‚¬â€ blocking.**
+**Pass or fail:** **UNKNOWN — blocking.**
 
 **Required evidence:** direct success, direct failure, bridge success,
 Native-module failure, and a deliberate later EVM revert; each must include
 EVM/Native before-and-after balances, transaction hash, and block height.
 
-## G0-C Ã¢â‚¬â€ Sender identity and authorization
+## G0-C — Sender identity and authorization
 
 **Question:** Does the Native contract see the verified mapped identity of the
 deployed Solidity escrow, and does the relevant EVM authorization window admit
@@ -223,13 +223,13 @@ the transaction path?
 window exists and live precompile activation was verified, but no EVM escrow
 exists and no account/window details were provided.
 
-**Pass or fail:** **UNKNOWN Ã¢â‚¬â€ blocking.**
+**Pass or fail:** **UNKNOWN — blocking.**
 
 **Required evidence:** deployed escrow address, its exact `qor1...` mapping,
 Native `info.sender` observation, current window query output, allowed-target
 scope, and a successful plus deliberately out-of-scope call.
 
-## G0-D Ã¢â‚¬â€ Atomicity
+## G0-D — Atomicity
 
 **Question:** Are Native reservation state and buyer escrow atomic in this
 project's actual cross-VM call path?
@@ -237,13 +237,13 @@ project's actual cross-VM call path?
 **Observed result:** **NOT VERIFIED.** Current docs and live enablement support
 the prerequisite only. No QoreLease target or Solidity caller exists.
 
-**Pass or fail:** **UNKNOWN Ã¢â‚¬â€ blocking.**
+**Pass or fail:** **UNKNOWN — blocking.**
 
 **Required evidence:** a real Diana transaction for every required case:
 success/success; Native rejection; later EVM revert; empty/malformed response;
 and inactive/unauthorised bridge handling. The EVM wrapper must fail closed.
 
-## G0-E Ã¢â‚¬â€ Governance feasibility
+## G0-E — Governance feasibility
 
 **Question:** Can the project receive a governed code upload, instantiation,
 and bridge allowlist/pin before the demo deadline?
@@ -253,7 +253,7 @@ uploads are disabled and bridge targets are code-pinned. The current normal
 proposal deposit is 10 QOR and voting period is four hours. Sponsor/quorum
 availability, a hybrid-signing account, and approval for this code are unknown.
 
-**Pass or fail:** **UNKNOWN Ã¢â‚¬â€ blocking.**
+**Pass or fail:** **UNKNOWN — blocking.**
 
 **Required evidence:** a reviewed proposal payload, source checksum, governance
 proposal ID and final status, actual code ID/contract address/history, and live
@@ -264,7 +264,7 @@ allowlist/pin query after approval.
 **NO-GO for product implementation.** Proceed only with the G0 probe work.
 The live network prerequisites are promising, but G0-A through G0-D have no
 Diana execution evidence and G0-E lacks governance/signer feasibility. Building
-the registry, escrow, UI, or service flow now would violate the projectÃ¢â‚¬â„¢s
+the registry, escrow, UI, or service flow now would violate the project’s
 mandatory gates.
 
 

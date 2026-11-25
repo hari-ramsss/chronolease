@@ -18,7 +18,7 @@ Optimized Wasm size is 169,218 bytes; its SHA-256 is `4b0125a5b04a93295ebf6f8f15
 
 ## Live Diana data used in JSON
 
-The previous snapshot was superseded by the read-only preflight at height `10673893`, time `2026-11-24T15:08:00.897621278Z`. Full evidence: `docs/evidence/proposal-a-operator-preflight.json`; parameter responses were at heights `10673890`â€“`10673892`. The owner account balance was not queried because no public account address was supplied; no wallet storage was accessed.
+The previous snapshot was superseded by the read-only preflight at height `10673893`, time `2026-11-24T15:08:00.897621278Z`. Full evidence: `docs/evidence/proposal-a-operator-preflight.json`; parameter responses were at heights `10673890`–`10673892`. The owner account balance was not queried because no public account address was supplied; no wallet storage was accessed.
 
 - Governance module account: `qor10d07y265gmmuvt4z0w9aw880jnsr700jwfyxr3`.
 - Upload permission `Nobody`; default instantiate permission `Everybody`.
@@ -71,7 +71,7 @@ After a separately approved upload succeeds, query actual code info and returned
 - Governance submission readiness: **NOT READY; requested archive URL, CLI/PQC tooling, local signing access, owner balance, and transaction gas estimate are outstanding**.
 - Product implementation: **NO-GO**.
 
-## Superseding Diana v3.2.10 CLI and Proposal A readiness record â€” 24 November 2026
+## Superseding Diana v3.2.10 CLI and Proposal A readiness record — 24 November 2026
 
 This record supersedes earlier v3.2.9/no-install and height 10673893 statements. The later verified snapshot and CLI results below are authoritative.
 

@@ -31,7 +31,7 @@ qorechaind tx gov submit-proposal artifacts/proposals/proposal-a-store-probe.jso
   --generate-only > /tmp/proposal-a-unsigned.json
 ```
 
-Do not reuse the earlier 20,000,000 gas / 2,000,000 `uqor` placeholder. The official [governance guide](https://docs.qorechain.io/developer-guide/governance-proposals-contracts/) says to dry-run the actual transaction, add 30% to measured gas, and use fees of at least `gas Ã— 0.1 uqor`. The current snapshot reports minimum gas price and base fee `0.1uqor`, consensus max block gas `500000000`, and cross-VM max Cosmos tx gas `50000000`. Generic transaction parameter REST endpoints return HTTP 501. The correct gas and fee cannot be fixed until an actual safe dry run and immediate live refresh.
+Do not reuse the earlier 20,000,000 gas / 2,000,000 `uqor` placeholder. The official [governance guide](https://docs.qorechain.io/developer-guide/governance-proposals-contracts/) says to dry-run the actual transaction, add 30% to measured gas, and use fees of at least `gas × 0.1 uqor`. The current snapshot reports minimum gas price and base fee `0.1uqor`, consensus max block gas `500000000`, and cross-VM max Cosmos tx gas `50000000`. Generic transaction parameter REST endpoints return HTTP 501. The correct gas and fee cannot be fixed until an actual safe dry run and immediate live refresh.
 
 ## PQC cosign dry run and fee selection
 
@@ -48,7 +48,7 @@ qorechaind tx pqc cosign /tmp/proposal-a-unsigned.json \
 
 If the verified installed help confirms no-send behavior and the approved local account keys are already available, use reported gas plus at least 30%, round up, and set fees to at least gas times the refreshed minimum gas price. Regenerate the unsigned transaction with reviewed values and repeat the no-send estimate. Confirm the proposal and Wasm hashes again. The official guide says the non-dry-run `tx pqc cosign` adds hybrid signatures **and broadcasts**; it is not a local signing-only operation.
 
-## Account and signing compatibility â€” owner review required
+## Account and signing compatibility — owner review required
 
 QoreChain's [official account guide](https://docs.qorechain.io/getting-started/deploy-in-5-minutes/) documents the Ethereum/coin-60 path `m/44'/60'/0'/0/i` and `eth_secp256k1`; the default Cosmos coin-118 key is a different account. `qor1...` and `0x...` are two encodings of the same 20-byte account address when derived from the same key. The CLI keyring must already contain an alias for the exact account; the documented `qorechaind keys import <name> <keyfile>` imports key material from a local file, and `keys add --recover` derives from a mnemonic. Neither operation was run, and no QoreX extension data was inspected.
 
@@ -56,7 +56,7 @@ The registered ML-DSA-87 key is address-bound. QoreChain documents its derivatio
 
 QoreChain's [QoreX integration](https://docs.qorechain.io/developer-tools/qorex-integrations/) exposes native `signAndBroadcast`, which signs with both keys and broadcasts. Its documented `signDirect` requires the SignDoc to already contain the hybrid layer; adding that layer via `signDirect` is listed as planned. Therefore the documented QoreX API does not provide a verified no-broadcast cosign path for this dry run. The SDK can hybrid-sign when supplied the PQC keypair, but does not remove the key-access requirement. The owner must review a separate secure local key-access procedure before any key setup or signing; no key recovery is requested here.
 
-## Manual broadcast â€” owner only after separate explicit approval
+## Manual broadcast — owner only after separate explicit approval
 
 This is the broadcast command. Do not run it as part of preparation:
 
@@ -83,7 +83,7 @@ Confirm the proposal title, deposit, status, and messages. A proposal in `PROPOS
 
 Official command and gas references: [QoreChain contract governance proposal guide](https://docs.qorechain.io/developer-guide/governance-proposals-contracts/) and [transaction command reference](https://docs.qorechain.io/cli-reference/transaction-commands/).
 
-## Superseding Diana v3.2.10 CLI and Proposal A readiness record â€” 24 November 2026
+## Superseding Diana v3.2.10 CLI and Proposal A readiness record — 24 November 2026
 
 This record supersedes earlier v3.2.9/no-install and height 10673893 statements. The later verified snapshot and CLI results below are authoritative.
 

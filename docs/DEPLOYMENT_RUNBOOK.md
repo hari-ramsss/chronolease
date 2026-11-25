@@ -128,7 +128,7 @@ Status: **OPTIMIZED LOCALLY** and **REPRODUCIBLE BUILD VERIFIED**. This does not
 pass G0-A or authorize uploading Wasm, submitting Proposal A, or broadcasting
 a transaction. Any governance action requires separate review.
 
-## Proposal A review bundle status ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â 24 November 2026
+## Proposal A review bundle status — 24 November 2026
 
 An unsigned upload-only JSON and deterministic gzip/base64 Wasm payload are
 prepared under `artifacts/proposals/` using the live Diana state snapshot in
